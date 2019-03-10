@@ -1,6 +1,6 @@
-sealed trait ClientPacket
+package ckh.native
 
-import ckh.native.Block
+sealed trait ClientPacket
 
 case class ClientInfo(
   name: String,
@@ -18,6 +18,8 @@ case class Query(
   query: String
 ) extends ClientPacket
 
-case class ClientBlock(block: Block) extends ClientPacket
+case class ClientDataBlock(block: Block) extends ClientPacket
+
+case object Cancel extends ClientPacket
 
 case object Ping extends ClientPacket

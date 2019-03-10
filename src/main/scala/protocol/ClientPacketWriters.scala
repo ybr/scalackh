@@ -1,17 +1,21 @@
+package ckh.protocol
+
 import ckh.native._
 
+import ColumnWriters._
 import DefaultWriters._
 import PacketTypes.Client._
 import LEB128._
 
 object ClientPacketWriters {
   val message: Writer[ClientPacket] = Writer { (m, buf) =>
-    println("Sending " + m + "...")
+    // println("Sending " + m + "...")
     m match {
       case info: ClientInfo => clientInfoWriter.write(info, buf)
       case q: Query => queryWriter.write(q, buf)
-      case b: ClientBlock => blockWriter.write(b, buf)
-      case Ping => pingWriter.write(Ping, buf)
+      case db: ClientDataBlock => clientDataBlockWriter.write(db, buf)
+      case Cancel => writeVarInt(CANCEL, buf)
+      case Ping => writeVarInt(PING, buf)
     }
   }
 
@@ -36,16 +40,20 @@ object ClientPacketWriters {
     writeString(q.query, buf)
   }
 
-  val blockWriter: Writer[ClientBlock] = Writer { (cb, buf) =>
-    writeVarInt(DATA, buf) // message type
+  val clientDataBlockWriter: Writer[ClientDataBlock] = Writer { (cb, buf) =>
+    writeVarInt(DATA, buf)
+    blockWriter.write(cb.block, buf)
+  }
 
-    val block = cb.block
+  val blockWriter: Writer[Block] = Writer { (b, buf) =>
+    writeString(b.table.getOrElse(""), buf)
+    blockInfoWriter.write(b.info, buf)
+    writeVarInt(b.nbColumns, buf)
+    writeVarInt(b.nbRows, buf)
 
-    writeString(block.table, buf)
-    blockInfoWriter.write(block.info, buf)
-
-    writeVarInt(block.nbColumns, buf)
-    writeVarInt(block.nbRows, buf)
+    // b.columns.foreach {
+    //   case col: DateColumn => dateColumnWriter.write(col, buf)
+    // }
   }
 
   val blockInfoWriter: Writer[BlockInfo] = Writer { (bi, buf) =>
@@ -54,10 +62,6 @@ object ClientPacketWriters {
     writeVarInt(2, buf) // field num for bucket num
     writeInt(bi.bucketNum, buf)
     writeVarInt(0, buf) // end of fields
-  }
-
-  val pingWriter: Writer[Ping.type] = Writer { (_, buf) =>
-    writeVarInt(PING, buf)
   }
 
   // it should be something like a dictionary

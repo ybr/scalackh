@@ -1,3 +1,5 @@
+package ckh.protocol
+
 import java.nio.{ByteBuffer, ByteOrder}
 
 import LEB128._

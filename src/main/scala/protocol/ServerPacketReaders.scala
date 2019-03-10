@@ -1,31 +1,33 @@
+package ckh.protocol
+
 import ckh.native._
-import ColumnReaders._
-import DefaultReaders._
-import PacketTypes.Server._
-import LEB128._
+import ckh.protocol.ColumnReaders._
+import ckh.protocol.DefaultReaders._
+import ckh.protocol.PacketTypes.Server._
+import ckh.protocol.LEB128._
 
 object ServerPacketReaders {
   val protocol: Reader[ServerPacket] = Reader { buf =>
     val packetType: Int = readVarInt(buf)
 
-    println(s"Packet type ${packetType}")
+    // println(s"Packet type ${packetType}")
     val message = packetType match {
       case HELLO => serverInfoReader.read(buf)
-      case DATA => blockReader.read(buf)
+      case DATA => dataBlockReader.read(buf)
       case EXCEPTION => serverExceptionReader.read(buf)
       case PROGRESS => progressReader.read(buf)
       case PONG => Pong
       case END_OF_STREAM => EndOfStream
       case PROFILE_INFO => profileInfoReader.read(buf)
-      case TOTALS => ???
-      case EXTREMES => ???
-      case TABLES_STATUS_RESPONSE => ???
-      case LOG => ???
-      case other => throw new UnsupportedOperationException(s"Unknown server packet type ${packetType}")
+      case TOTALS => totalsBlockReader.read(buf)
+      case EXTREMES => extremesBlockReader.read(buf)
+      // case TABLES_STATUS_RESPONSE => ???
+      case LOG => logBlockReader.read(buf)
+      case other => throw new UnsupportedOperationException(s"Unknown server packet type ${other}")
     }
 
-    println("Received " + message)
-    println(buf)
+    // println("Received " + message)
+    // println(buf)
     message
   }
 
@@ -40,34 +42,8 @@ object ServerPacketReaders {
     )
   }
 
-  val blockReader: Reader[ServerBlock] = Reader { buf =>
-    val table = readString(buf)
-
-    val info = blockInfoReader.read(buf)
-
-    val nbColumns = readVarInt(buf)
-
-    val nbRows = readVarInt(buf)
-
-    val columns = (0 until nbColumns).map { _ =>
-      val columnName = readString(buf)
-      val columnType = readString(buf)
-
-      columnType match {
-        case "Date" => dateColumnReader(columnName, nbRows).read(buf)
-        case "DateTime" => datetimeColumnReader(columnName, nbRows).read(buf)
-        case "Float32" => float32ColumnReader(columnName, nbRows).read(buf)
-        case "Float64" => float64ColumnReader(columnName, nbRows).read(buf)
-        case "Int8" => int8ColumnReader(columnName, nbRows).read(buf)
-        case "Int16" => int16ColumnReader(columnName, nbRows).read(buf)
-        case "Int32" => int32ColumnReader(columnName, nbRows).read(buf)
-        case "Int64" => int64ColumnReader(columnName, nbRows).read(buf)
-        case "String" => stringColumnReader(columnName, nbRows).read(buf)
-      }
-    }.toList
-
-    val block = Block(table, info, nbColumns, nbRows, columns)
-    ServerBlock(block)
+  val dataBlockReader: Reader[ServerDataBlock] = Reader { buf =>
+    ServerDataBlock(blockReader.read(buf))
   }
 
   val blockInfoReader: Reader[BlockInfo] = Reader { buf =>
@@ -117,5 +93,49 @@ object ServerPacketReaders {
     val calculatedRowsBeforeLimit = readBool(buf)
 
     ProfileInfo(rows, blocks, bytes, appliedLimit, rowsBeforeLimit, calculatedRowsBeforeLimit)
+  }
+
+  val totalsBlockReader: Reader[TotalsBlock] = Reader { buf =>
+    TotalsBlock(blockReader.read(buf))
+  }
+
+  val extremesBlockReader: Reader[ExtremesBlock] = Reader { buf =>
+    ExtremesBlock(blockReader.read(buf))
+  }
+
+  val logBlockReader: Reader[LogBlock] = Reader { buf =>
+    LogBlock(blockReader.read(buf))
+  }
+
+  val blockReader: Reader[Block] = Reader { buf =>
+    val maybeTableName = {
+      val str = readString(buf)
+      if(str.isEmpty) None else Some(str)
+    }
+
+    val info = blockInfoReader.read(buf)
+
+    val nbColumns = readVarInt(buf)
+
+    val nbRows = readVarInt(buf)
+
+    val columns = (0 until nbColumns).map { _ =>
+      val columnName = readString(buf)
+      val columnType = readString(buf)
+
+      columnType match {
+        case "Date" => dateColumnReader(columnName, nbRows).read(buf)
+        case "DateTime" => datetimeColumnReader(columnName, nbRows).read(buf)
+        case "Float32" => float32ColumnReader(columnName, nbRows).read(buf)
+        case "Float64" => float64ColumnReader(columnName, nbRows).read(buf)
+        case "Int8" => int8ColumnReader(columnName, nbRows).read(buf)
+        case "Int16" => int16ColumnReader(columnName, nbRows).read(buf)
+        case "Int32" => int32ColumnReader(columnName, nbRows).read(buf)
+        case "Int64" => int64ColumnReader(columnName, nbRows).read(buf)
+        case "String" => stringColumnReader(columnName, nbRows).read(buf)
+      }
+    }.toList
+
+    Block(maybeTableName, info, nbColumns, nbRows, columns)
   }
 }

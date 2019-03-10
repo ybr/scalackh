@@ -1,4 +1,4 @@
-import ckh.native.Block
+package ckh.native
 
 sealed trait ServerPacket
 
@@ -7,7 +7,7 @@ case class ServerInfo(
   version: Version
 ) extends ServerPacket
 
-case class ServerBlock(block: Block) extends ServerPacket
+case class ServerDataBlock(block: Block) extends ServerPacket
 
 case class ServerException(
   code: Int,
@@ -23,9 +23,9 @@ case class Progress(
   totalRows: Option[Int]
 ) extends ServerPacket
 
-case object EndOfStream extends ServerPacket
-
 case object Pong extends ServerPacket
+
+case object EndOfStream extends ServerPacket
 
 case class ProfileInfo(
   rows: Int,
@@ -35,3 +35,9 @@ case class ProfileInfo(
   rowsBeforeLimit: Int,
   calculatedRowsBeforeLimit: Boolean
 ) extends ServerPacket
+
+case class TotalsBlock(block: Block) extends ServerPacket
+
+case class ExtremesBlock(block: Block) extends ServerPacket
+
+case class LogBlock(block: Block) extends ServerPacket

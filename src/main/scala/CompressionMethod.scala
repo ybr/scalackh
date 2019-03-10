@@ -1,3 +1,5 @@
+package ckh.native
+
 sealed trait CompressionMethod
 case object LZ4 extends CompressionMethod
 case object LZ4HC extends CompressionMethod

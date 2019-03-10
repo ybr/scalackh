@@ -1,3 +1,5 @@
+package ckh.protocol
+
 import java.nio.ByteBuffer
 
 // Encode integer of variable length using LEB128

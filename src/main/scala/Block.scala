@@ -1,7 +1,7 @@
 package ckh.native
 
 case class Block(
-  table: String,
+  table: Option[String],
   info: BlockInfo,
   nbColumns: Int,
   nbRows: Int,
@@ -9,7 +9,7 @@ case class Block(
 )
 
 object Block {
-  val empty: Block = Block("", BlockInfo.empty, 0, 0, List.empty)
+  val empty: Block = Block(None, BlockInfo.empty, 0, 0, List.empty)
 }
 
 case class BlockInfo(

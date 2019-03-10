@@ -1,3 +1,5 @@
+package ckh.protocol
+
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 
 import ckh.native._

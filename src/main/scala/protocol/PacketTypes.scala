@@ -1,3 +1,5 @@
+package ckh.protocol
+
 object PacketTypes {
   object Client {
     // Name, version, revision, default DB
@@ -17,7 +19,7 @@ object PacketTypes {
     val PING = 4
 
     // Check status of tables on the server
-    val TABLES_STATUS_REQUEST = 5
+    val TABLES_STATUS_REQUEST = 5 // not implemented
   }
 
   object Server {
@@ -49,7 +51,7 @@ object PacketTypes {
     val EXTREMES = 8
 
     // Response to TablesStatus request
-    val TABLES_STATUS_RESPONSE = 9
+    val TABLES_STATUS_RESPONSE = 9 // not implemented
 
     // System logs of the query execution
     val LOG = 10

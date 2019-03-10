@@ -1,3 +1,5 @@
+package ckh.protocol
+
 import java.nio.ByteBuffer
 
 trait Reader[T] {
