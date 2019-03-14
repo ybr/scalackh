@@ -10,12 +10,6 @@ object DefaultWriters {
     buf.put(byte)
   }
 
-  def writeShort(s: Short, buf: ByteBuffer): Unit = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
-    buf.putShort(s)
-    buf.order(ByteOrder.BIG_ENDIAN)
-  }
-
   def writeInt(n: Int, buf: ByteBuffer): Unit = {
     buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putInt(n)

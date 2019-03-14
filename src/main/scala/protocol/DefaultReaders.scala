@@ -7,14 +7,20 @@ import LEB128._
 object DefaultReaders {
   def readBool(buf: ByteBuffer): Boolean = buf.get() != 0
 
-  def readBytes(bytes: ByteBuffer): Array[Byte] = {
-    val length: Int = readVarInt(bytes)
+  def readBytesFixed(length: Int, buf: ByteBuffer): Array[Byte] = {
     val bytesFixedLength = new Array[Byte](length)
-    bytes.get(bytesFixedLength)
+    buf.get(bytesFixedLength)
     bytesFixedLength
   }
 
-  def readString(bytes: ByteBuffer): String = new String(readBytes(bytes), "UTF-8")
+  def readBytes(buf: ByteBuffer): Array[Byte] = {
+    val length: Int = readVarInt(buf)
+    readBytesFixed(length, buf)
+  }
+
+  def readStringFixed(length: Int, buf: ByteBuffer): String = new String(readBytesFixed(length, buf), "UTF-8")
+
+  def readString(buf: ByteBuffer): String = new String(readBytes(buf), "UTF-8")
 
   def readShort(buf: ByteBuffer): Short = {
     buf.order(ByteOrder.LITTLE_ENDIAN)

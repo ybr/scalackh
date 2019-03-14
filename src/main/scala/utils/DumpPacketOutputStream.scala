@@ -2,7 +2,7 @@ package utils
 
 import java.io.{FilterOutputStream, OutputStream}
 
-class DebugOutputStream(out: OutputStream) extends FilterOutputStream(out) {
+class DumpPacketOutputStream(out: OutputStream) extends FilterOutputStream(out) {
   override def write(b: Array[Byte]): Unit = {
     println(s">>>>>>>>>> Sending ${b.length} bytes")
     println(HexDump.format(b, 0, b.length))

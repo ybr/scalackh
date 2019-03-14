@@ -4,6 +4,7 @@ import ckh.native._
 import java.io.{BufferedInputStream, BufferedOutputStream, InputStream, OutputStream}
 import java.net.{InetAddress, Socket}
 import java.nio.ByteBuffer
+import utils._
 
 class Client(
   val address: InetAddress,
@@ -13,8 +14,12 @@ class Client(
 
   def connect(): Connection = {
     val socket = new Socket(address, port)
-    val is = new BufferedInputStream(socket.getInputStream(), Client.BUFFER_SIZE)
-    val os = new BufferedOutputStream(socket.getOutputStream(), Client.BUFFER_SIZE)
+
+    val is = new BufferedInputStream(new DumpPacketInputStream(socket.getInputStream()), Client.BUFFER_SIZE)
+    val os = new BufferedOutputStream(new DumpPacketOutputStream(socket.getOutputStream()), Client.BUFFER_SIZE)
+
+    // val is = new BufferedInputStream(socket.getInputStream(), Client.BUFFER_SIZE)
+    // val os = new BufferedOutputStream(socket.getOutputStream(), Client.BUFFER_SIZE)
 
     val in = ByteBuffer.allocate(Client.BUFFER_SIZE)
     val out = ByteBuffer.allocate(Client.BUFFER_SIZE)
@@ -48,8 +53,9 @@ object Client {
 }
 
 case class Connection(socket: Socket, is: InputStream, os: OutputStream, in: ByteBuffer, out: ByteBuffer, serverInfo: ServerInfo) {
-  def query(sql: String): Iterator[Block] = {
-    Connection.iterator(is, os, in, out, ProtocolSteps.query(sql))
+
+  def query(sql: String, externalTables: Iterator[Block] = Iterator.empty): Iterator[Block] = {
+    Connection.iterator(is, os, in, out, ProtocolSteps.execute(sql, externalTables, Iterator.empty))
     .collect {
       case Emit(ServerDataBlock(block), _) if(block.nbColumns > 0 && block.nbRows > 0) => block
       case Emit(x: ServerException, _) => throw new ClickhouseServerException(x)
@@ -57,7 +63,8 @@ case class Connection(socket: Socket, is: InputStream, os: OutputStream, in: Byt
   }
 
   def insert(sql: String, values: Iterator[Block]): Unit = {
-    ???
+    Connection.iterator(is, os, in, out, ProtocolSteps.execute(sql, Iterator.empty, values))
+    .foreach(_ => ())
   }
 
   def disconnect(): Unit = socket.close()

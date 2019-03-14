@@ -13,6 +13,10 @@ case object Done extends ProtocolStep
 case class Error(msg: String) extends ProtocolStep
 
 object Cont {
+  def apply(next: => ProtocolStep): ProtocolStep = Cont { (_, _) =>
+    next
+  }
+
   def i(next: ByteBuffer => ProtocolStep): ProtocolStep = Cont { (i, _) =>
     next(i)
   }
@@ -40,6 +44,10 @@ object NeedsInput {
   }
 }
 
+object Emit {
+  def apply(packet: ServerPacket, next: => ProtocolStep): ProtocolStep = Emit(packet, (_, _) => next)
+}
+
 import ckh.native._
 
 object ProtocolSteps {
@@ -50,36 +58,51 @@ object ProtocolSteps {
 
   val receiveHello: ProtocolStep = NeedsInput.i { buf =>
     ServerPacketReaders.protocol.read(buf) match {
-      case info: ServerInfo =>
-        // println("Received server info: " + info)
-        Emit(info, (_, _) => Done)
+      case info: ServerInfo => Emit(info, Done)
       case other => Error("Unexpected packet: " + other)
     }
-  }
-
-  def query(q: String): ProtocolStep = Cont.o { buf =>
-    ClientPacketWriters.message.write(Query(None, Complete, None, q), buf)
-    ClientPacketWriters.message.write(ClientDataBlock(Block.empty), buf) // external tables
-    receiveResult
   }
 
   val receiveResult: ProtocolStep = multipacket(NeedsInput.i { buf =>
     val packet = ServerPacketReaders.protocol.read(buf)
     packet match {
       case p: ServerInfo => Error("Unexpected packet: " + p)
-      case p: ServerDataBlock => Emit(p, (_, _) => receiveResult)
-      case p: Progress => Emit(p, (_, _) => receiveResult)
-      case p: ProfileInfo => Emit(p, (_, _) => receiveResult)
-      case p: TotalsBlock => Emit(p, (_, _) => receiveResult)
-      case p: ExtremesBlock => Emit(p, (_, _) => receiveResult)
-      case p: LogBlock => Emit(p, (_, _) => receiveResult)
-      case p: ServerException => Emit(p, (_, _) => Done)
-      case Pong => Emit(Pong, (_, _) => receiveResult)
+      case p: ServerDataBlock => Emit(p, receiveResult)
+      case p: Progress => Emit(p, receiveResult)
+      case p: ProfileInfo => Emit(p, receiveResult)
+      case p: TotalsBlock => Emit(p, receiveResult)
+      case p: ExtremesBlock => Emit(p, receiveResult)
+      case p: LogBlock => Emit(p, receiveResult)
+      case p: ServerException => Emit(p, Done)
+      case Pong => Emit(Pong, receiveResult)
       case EndOfStream => Done
     }
   })
 
-  // val receiveResult: ProtocolStep = multipacket(receiveResultLoop)
+  def execute(q: String, externalTables: Iterator[Block], values: Iterator[Block]): ProtocolStep = Cont.o { buf =>
+    ClientPacketWriters.message.write(Query(None, Complete, None, q), buf)
+    externalTables.foreach { extBlock =>
+      ClientPacketWriters.message.write(ClientDataBlock(extBlock), buf)
+    }
+    ClientPacketWriters.message.write(ClientDataBlock(Block.empty), buf) // external tables
+    receiveSample(sample => sendData(sample, values))
+  }
+
+  def receiveSample(nextWithSample: Block => ProtocolStep): ProtocolStep = NeedsInput.i { buf =>
+    val packet = ServerPacketReaders.protocol.read(buf)
+    packet match {
+      case p: ServerDataBlock => Emit(p, Cont(nextWithSample(p.block)))
+      case other => Error("Unexpected packet: " + other)
+    }
+  }
+
+  def sendData(sample: Block, values: Iterator[Block]): ProtocolStep = Cont.o { buf =>
+    values.foreach { block =>
+      ClientPacketWriters.message.write(ClientDataBlock(block), buf)
+    }
+    ClientPacketWriters.message.write(ClientDataBlock(Block.empty), buf) // end of data
+    receiveResult
+  }
 
   def multipacket(step: ProtocolStep): ProtocolStep = step match {
     case NeedsInput(next) => Cont { (i, o) =>

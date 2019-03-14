@@ -9,7 +9,6 @@ import LEB128._
 
 object ClientPacketWriters {
   val message: Writer[ClientPacket] = Writer { (m, buf) =>
-    // println("Sending " + m + "...")
     m match {
       case info: ClientInfo => clientInfoWriter.write(info, buf)
       case q: Query => queryWriter.write(q, buf)
@@ -51,9 +50,17 @@ object ClientPacketWriters {
     writeVarInt(b.nbColumns, buf)
     writeVarInt(b.nbRows, buf)
 
-    // b.columns.foreach {
-    //   case col: DateColumn => dateColumnWriter.write(col, buf)
-    // }
+    b.columns.foreach {
+      case col: DateColumn => dateColumnWriter.write(col, buf)
+      case col: DateTimeColumn => datetimeColumnWriter.write(col, buf)
+      case col: Float32Column => float32ColumnWriter.write(col, buf)
+      case col: Float64Column => float64ColumnWriter.write(col, buf)
+      case col: Int8Column => int8ColumnWriter.write(col, buf)
+      case col: Int16Column => int16ColumnWriter.write(col, buf)
+      case col: Int32Column => int32ColumnWriter.write(col, buf)
+      case col: Int64Column => int64ColumnWriter.write(col, buf)
+      case col: StringColumn => stringColumnWriter.write(col, buf)
+    }
   }
 
   val blockInfoWriter: Writer[BlockInfo] = Writer { (bi, buf) =>

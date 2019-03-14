@@ -2,7 +2,7 @@ package utils
 
 import java.io.{FilterInputStream, InputStream}
 
-class DebugInputStream(in: InputStream) extends FilterInputStream(in) {
+class DumpPacketInputStream(in: InputStream) extends FilterInputStream(in) {
   override def read(b: Array[Byte]): Int = {
     val nbBytes: Int = in.read(b)
     println(s"<<<<<<<<<< Received ${nbBytes} bytes")

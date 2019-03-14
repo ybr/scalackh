@@ -10,7 +10,6 @@ object ServerPacketReaders {
   val protocol: Reader[ServerPacket] = Reader { buf =>
     val packetType: Int = readVarInt(buf)
 
-    // println(s"Packet type ${packetType}")
     val message = packetType match {
       case HELLO => serverInfoReader.read(buf)
       case DATA => dataBlockReader.read(buf)
@@ -26,8 +25,6 @@ object ServerPacketReaders {
       case other => throw new UnsupportedOperationException(s"Unknown server packet type ${other}")
     }
 
-    // println("Received " + message)
-    // println(buf)
     message
   }
 
@@ -123,17 +120,7 @@ object ServerPacketReaders {
       val columnName = readString(buf)
       val columnType = readString(buf)
 
-      columnType match {
-        case "Date" => dateColumnReader(columnName, nbRows).read(buf)
-        case "DateTime" => datetimeColumnReader(columnName, nbRows).read(buf)
-        case "Float32" => float32ColumnReader(columnName, nbRows).read(buf)
-        case "Float64" => float64ColumnReader(columnName, nbRows).read(buf)
-        case "Int8" => int8ColumnReader(columnName, nbRows).read(buf)
-        case "Int16" => int16ColumnReader(columnName, nbRows).read(buf)
-        case "Int32" => int32ColumnReader(columnName, nbRows).read(buf)
-        case "Int64" => int64ColumnReader(columnName, nbRows).read(buf)
-        case "String" => stringColumnReader(columnName, nbRows).read(buf)
-      }
+      columnReader(columnName, nbRows, columnType).read(buf)
     }.toList
 
     Block(maybeTableName, info, nbColumns, nbRows, columns)

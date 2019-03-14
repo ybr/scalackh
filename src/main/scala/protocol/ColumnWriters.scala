@@ -1,5 +1,6 @@
 package ckh.protocol
 
+import java.nio.{ByteBuffer, ByteOrder}
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 
 import ckh.native._
@@ -15,99 +16,78 @@ object ColumnWriters {
     }
   }
 
-  // def datetimeColumnWriter(name: String, size: Int): Writer[DateTimeColumn] = Writer { buf =>
-  //   val data: Array[LocalDateTime] = new Array[LocalDateTime](size)
+  val datetimeColumnWriter: Writer[DateTimeColumn] = Writer { (col, buf) =>
+    writeString(col.name, buf)
+    writeString("DateTime", buf)
 
-  //   var i: Int = 0
-  //   while(i < size) {
-  //     data(i) = LocalDateTime.ofEpochSecond(readInt(buf), 0, ZoneOffset.UTC)
-  //     i = i + 1
-  //   }
+    col.data.foreach { datetime =>
+      writeInt(datetime.toEpochSecond(ZoneOffset.UTC).toInt, buf)
+    }
+  }
 
-  //   DateTimeColumn(name, data)
-  // }
+  val float32ColumnWriter: Writer[Float32Column] = Writer { (col, buf) =>
+    writeString(col.name, buf)
+    writeString("Float32", buf)
+    col.data.foreach(writeFloat(_, buf))
+  }
 
-  // def float32ColumnWriter(name: String, size: Int): Writer[Float32Column] = Writer { buf =>
-  //   val data: Array[Float] = new Array[Float](size)
+  val float64ColumnWriter: Writer[Float64Column] = Writer { (col, buf) =>
+    writeString(col.name, buf)
+    writeString("Float64", buf)
+    col.data.foreach(writeDouble(_, buf))
+  }
 
-  //   var i: Int = 0
-  //   while(i < size) {
-  //     data(i) = readFloat(buf)
-  //     i = i + 1
-  //   }
+  val int8ColumnWriter: Writer[Int8Column] = Writer { (col, buf) =>
+    writeString(col.name, buf)
+    writeString("Int8", buf)
+    col.data.foreach(buf.put)
+  }
 
-  //   Float32Column(name, data)
-  // }
+  val int16ColumnWriter: Writer[Int16Column] = Writer { (col, buf) =>
+    writeString(col.name, buf)
+    writeString("Int16", buf)
+    col.data.foreach(writeShort(_, buf))
+  }
 
-  // def float64ColumnWriter(name: String, size: Int): Writer[Float64Column] = Writer { buf =>
-  //   val data: Array[Double] = new Array[Double](size)
+  val int32ColumnWriter: Writer[Int32Column] = Writer { (col, buf) =>
+    writeString(col.name, buf)
+    writeString("Int32", buf)
+    col.data.foreach(writeInt(_, buf))
+  }
 
-  //   var i: Int = 0
-  //   while(i < size) {
-  //     data(i) = readDouble(buf)
-  //     i = i + 1
-  //   }
+  val int64ColumnWriter: Writer[Int64Column] = Writer { (col, buf) =>
+    writeString(col.name, buf)
+    writeString("Int64", buf)
+    col.data.foreach(writeLong(_, buf))
+  }
 
-  //   Float64Column(name, data)
-  // }
+  val stringColumnWriter: Writer[StringColumn] = Writer { (col, buf) =>
+    writeString(col.name, buf)
+    writeString("String", buf)
+    col.data.foreach(writeString(_, buf))
+  }
 
-  // def int8ColumnWriter(name: String, size: Int): Writer[Int8Column] = Writer { buf =>
-  //   val data: Array[Byte] = new Array[Byte](size)
+  def writeShort(s: Short, buf: ByteBuffer): Unit = {
+    buf.order(ByteOrder.LITTLE_ENDIAN)
+    buf.putShort(s)
+    buf.order(ByteOrder.BIG_ENDIAN)
+  }
 
-  //   var i: Int = 0
-  //   while(i < size) {
-  //     data(i) = buf.get()
-  //     i = i + 1
-  //   }
+  def writeLong(n: Long, buf: ByteBuffer): Unit = {
+    buf.order(ByteOrder.LITTLE_ENDIAN)
+    buf.putLong(n)
+    buf.order(ByteOrder.BIG_ENDIAN)
+  }
 
-  //   Int8Column(name, data)
-  // }
+  def writeDouble(n: Double, buf: ByteBuffer): Unit = {
+    buf.order(ByteOrder.LITTLE_ENDIAN)
+    buf.putDouble(n)
+    buf.order(ByteOrder.BIG_ENDIAN)
+  }
 
-  // def int16ColumnWriter(name: String, size: Int): Writer[Int16Column] = Writer { buf =>
-  //   val data: Array[Short] = new Array[Short](size)
-
-  //   var i: Int = 0
-  //   while(i < size) {
-  //     data(i) = readShort(buf)
-  //     i = i + 1
-  //   }
-
-  //   Int16Column(name, data)
-  // }
-
-  // def int32ColumnWriter(name: String, size: Int): Writer[Int32Column] = Writer { buf =>
-  //   val data: Array[Int] = new Array[Int](size)
-
-  //   var i: Int = 0
-  //   while(i < size) {
-  //     data(i) = readInt(buf)
-  //     i = i + 1
-  //   }
-
-  //   Int32Column(name, data)
-  // }
-
-  // def int64ColumnWriter(name: String, size: Int): Writer[Int64Column] = Writer { buf =>
-  //   val data: Array[Long] = new Array[Long](size)
-
-  //   var i: Int = 0
-  //   while(i < size) {
-  //     data(i) = readLong(buf)
-  //     i = i + 1
-  //   }
-
-  //   Int64Column(name, data)
-  // }
-
-  // def stringColumnWriter(name: String, size: Int): Writer[StringColumn] = Writer { buf =>
-  //   val data: Array[String] = new Array[String](size)
-
-  //   var i: Int = 0
-  //   while(i < size) {
-  //     data(i) = readString(buf)
-  //     i = i + 1
-  //   }
-
-  //   StringColumn(name, data)
-  // }
+  def writeFloat(n: Float, buf: ByteBuffer): Unit = {
+    buf.order(ByteOrder.LITTLE_ENDIAN)
+    buf.putFloat(n)
+    buf.order(ByteOrder.BIG_ENDIAN)
+  }
 }
