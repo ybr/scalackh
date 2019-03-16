@@ -4,6 +4,8 @@ import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import ckh.native._
+import ArrayReaders._
+import ClickhouseDataReaders._
 import DefaultReaders._
 
 import scala.collection.immutable.IntMap
@@ -13,9 +15,12 @@ object ColumnReaders {
   val fixedString = "FixedString\\(([0-9]+)\\)".r
   val enum = "Enum([0-9]+)\\((.+)\\)".r
   val enumDef = "'(.+)' = ([0-9]+)".r
+  val array = "Array\\((.+)\\)".r
+  val tuple = "Tuple\\((.+)\\)".r
 
   def columnReader(name: String, nbRows: Int, columnType: String): Reader[Column] = Reader { buf =>
     columnType match {
+      case array(elemType) => arrayColumnReader(name, nbRows, elemType).read(buf)
       case "Date" => dateColumnReader(name, nbRows).read(buf)
       case "DateTime" => datetimeColumnReader(name, nbRows).read(buf)
       case enum(bits, enumStr) =>
@@ -32,8 +37,19 @@ object ColumnReaders {
       case "Int64" => int64ColumnReader(name, nbRows).read(buf)
       case nullable(nullableType) => nullableColumnReader(name, nbRows, columnReader(name, nbRows, nullableType)).read(buf)
       case "String" => stringColumnReader(name, nbRows).read(buf)
+      case tuple(types) => tupleColumnReader(name, nbRows, types).read(buf)
       case "UUID" => uuidColumnReader(name, nbRows).read(buf)
+
+      case other => Reader { buf =>
+        StringColumn(other, Array.empty)
+      }.read(buf)
     }
+  }
+
+  def arrayColumnReader(name: String, nbRows: Int, elemType: String): Reader[ArrayColumn] = Reader { buf =>
+    val arrays = arrayReader(nbRows, elemType).read(buf)
+
+    ArrayColumn(name, arrays)
   }
 
   def dateColumnReader(name: String, nbRows: Int): Reader[DateColumn] = Reader { buf =>
@@ -181,6 +197,20 @@ object ColumnReaders {
     }
 
     StringColumn(name, data)
+  }
+
+  def tupleColumnReader(name: String, nbRows: Int, typesStr: String): Reader[TupleColumn] = Reader { buf =>
+    val reader = tupleReader(typesStr)
+
+    val data: Array[TupleData] = new Array[TupleData](nbRows)
+
+    var i: Int = 0
+    while(i < nbRows) {
+      data(i) = reader.read(buf)
+      i = i + 1
+    }
+
+    TupleColumn(name, data)
   }
 
   def uuidColumnReader(name: String, nbRows: Int): Reader[UuidColumn] = Reader { buf =>
