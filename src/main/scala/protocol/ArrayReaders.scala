@@ -15,13 +15,17 @@ object ArrayReaders {
     elemType match {
       case "Date" => arrayDateReader(nbRows, sizes).read(buf)
       case "DateTime" => arrayDateTimeReader(nbRows, sizes).read(buf)
-      case "Float32" => arrayFloatReader(nbRows, sizes).read(buf)
-      case "Float64" => arrayDoubleReader(nbRows, sizes).read(buf)
-      case "Int8" => arrayByteReader(nbRows, sizes).read(buf)
-      case "Int16" => arrayShortReader(nbRows, sizes).read(buf)
-      case "Int32" => arrayIntReader(nbRows, sizes).read(buf)
-      case "Int64" => arrayLongReader(nbRows, sizes).read(buf)
+      case "Float32" => arrayFloat32Reader(nbRows, sizes).read(buf)
+      case "Float64" => arrayFloat64Reader(nbRows, sizes).read(buf)
+      case "Int8" => arrayInt8Reader(nbRows, sizes).read(buf)
+      case "Int16" => arrayInt16Reader(nbRows, sizes).read(buf)
+      case "Int32" => arrayInt32Reader(nbRows, sizes).read(buf)
+      case "Int64" => arrayInt64Reader(nbRows, sizes).read(buf)
       case "String" => arrayStringReader(nbRows, sizes).read(buf)
+      // case "UInt8" => arrayUInt8Reader(nbRows, sizes).read(buf)
+      // case "Int16" => arrayUInt16Reader(nbRows, sizes).read(buf)
+      // case "Int32" => arrayUInt32Reader(nbRows, sizes).read(buf)
+      // case "Int64" => arrayUInt64Reader(nbRows, sizes).read(buf)
     }
   }
 
@@ -99,28 +103,7 @@ object ArrayReaders {
     DateTimeArray(data)
   }
 
-  def arrayByteReader(nbRows: Int, sizes: Array[Int]): Reader[ByteArray] = Reader { buf =>
-    val data: Array[Array[Byte]] = new Array[Array[Byte]](nbRows)
-
-    var i: Int = 0
-    while(i < nbRows) {
-      val arraySize: Int = sizes(i)
-      val arr = new Array[Byte](arraySize)
-      data(i) = arr
-
-      var j: Int = 0
-      while(j < arraySize) {
-        arr(j) = buf.get()
-        j = j + 1
-      }
-
-      i = i + 1
-    }
-
-    ByteArray(data)
-  }
-
-  def arrayDoubleReader(nbRows: Int, sizes: Array[Int]): Reader[DoubleArray] = Reader { buf =>
+  def arrayFloat64Reader(nbRows: Int, sizes: Array[Int]): Reader[Float64Array] = Reader { buf =>
     val data: Array[Array[Double]] = new Array[Array[Double]](nbRows)
 
     var i: Int = 0
@@ -138,10 +121,10 @@ object ArrayReaders {
       i = i + 1
     }
 
-    DoubleArray(data)
+    Float64Array(data)
   }
 
-  def arrayFloatReader(nbRows: Int, sizes: Array[Int]): Reader[FloatArray] = Reader { buf =>
+  def arrayFloat32Reader(nbRows: Int, sizes: Array[Int]): Reader[Float32Array] = Reader { buf =>
     val data: Array[Array[Float]] = new Array[Array[Float]](nbRows)
 
     var i: Int = 0
@@ -159,52 +142,31 @@ object ArrayReaders {
       i = i + 1
     }
 
-    FloatArray(data)
+    Float32Array(data)
   }
 
-  def arrayIntReader(nbRows: Int, sizes: Array[Int]): Reader[IntArray] = Reader { buf =>
-    val data: Array[Array[Int]] = new Array[Array[Int]](nbRows)
+  def arrayInt8Reader(nbRows: Int, sizes: Array[Int]): Reader[Int8Array] = Reader { buf =>
+    val data: Array[Array[Byte]] = new Array[Array[Byte]](nbRows)
 
     var i: Int = 0
     while(i < nbRows) {
       val arraySize: Int = sizes(i)
-      val arr = new Array[Int](arraySize)
+      val arr = new Array[Byte](arraySize)
       data(i) = arr
 
       var j: Int = 0
       while(j < arraySize) {
-        arr(j) = readInt(buf)
+        arr(j) = buf.get()
         j = j + 1
       }
 
       i = i + 1
     }
 
-    IntArray(data)
+    Int8Array(data)
   }
 
-  def arrayLongReader(nbRows: Int, sizes: Array[Int]): Reader[LongArray] = Reader { buf =>
-    val data: Array[Array[Long]] = new Array[Array[Long]](nbRows)
-
-    var i: Int = 0
-    while(i < nbRows) {
-      val arraySize: Int = sizes(i)
-      val arr = new Array[Long](arraySize)
-      data(i) = arr
-
-      var j: Int = 0
-      while(j < arraySize) {
-        arr(j) = readLong(buf)
-        j = j + 1
-      }
-
-      i = i + 1
-    }
-
-    LongArray(data)
-  }
-
-  def arrayShortReader(nbRows: Int, sizes: Array[Int]): Reader[ShortArray] = Reader { buf =>
+  def arrayInt16Reader(nbRows: Int, sizes: Array[Int]): Reader[Int16Array] = Reader { buf =>
     val data: Array[Array[Short]] = new Array[Array[Short]](nbRows)
 
     var i: Int = 0
@@ -222,7 +184,49 @@ object ArrayReaders {
       i = i + 1
     }
 
-    ShortArray(data)
+    Int16Array(data)
+  }
+
+  def arrayInt32Reader(nbRows: Int, sizes: Array[Int]): Reader[Int32Array] = Reader { buf =>
+    val data: Array[Array[Int]] = new Array[Array[Int]](nbRows)
+
+    var i: Int = 0
+    while(i < nbRows) {
+      val arraySize: Int = sizes(i)
+      val arr = new Array[Int](arraySize)
+      data(i) = arr
+
+      var j: Int = 0
+      while(j < arraySize) {
+        arr(j) = readInt(buf)
+        j = j + 1
+      }
+
+      i = i + 1
+    }
+
+    Int32Array(data)
+  }
+
+  def arrayInt64Reader(nbRows: Int, sizes: Array[Int]): Reader[Int64Array] = Reader { buf =>
+    val data: Array[Array[Long]] = new Array[Array[Long]](nbRows)
+
+    var i: Int = 0
+    while(i < nbRows) {
+      val arraySize: Int = sizes(i)
+      val arr = new Array[Long](arraySize)
+      data(i) = arr
+
+      var j: Int = 0
+      while(j < arraySize) {
+        arr(j) = readLong(buf)
+        j = j + 1
+      }
+
+      i = i + 1
+    }
+
+    Int64Array(data)
   }
 
   def arrayStringReader(nbRows: Int, sizes: Array[Int]): Reader[StringArray] = Reader { buf =>

@@ -1,5 +1,6 @@
 package ckh.protocol
 
+import java.math.BigInteger
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
@@ -38,11 +39,13 @@ object ColumnReaders {
       case nullable(nullableType) => nullableColumnReader(name, nbRows, columnReader(name, nbRows, nullableType)).read(buf)
       case "String" => stringColumnReader(name, nbRows).read(buf)
       case tuple(types) => tupleColumnReader(name, nbRows, types).read(buf)
+      case "UInt8" => uint8ColumnReader(name, nbRows).read(buf)
+      case "UInt16" => uint16ColumnReader(name, nbRows).read(buf)
+      case "UInt32" => uint32ColumnReader(name, nbRows).read(buf)
+      case "UInt64" => uint64ColumnReader(name, nbRows).read(buf)
       case "UUID" => uuidColumnReader(name, nbRows).read(buf)
 
-      case other => Reader { buf =>
-        StringColumn(other, Array.empty)
-      }.read(buf)
+      case other => throw new UnsupportedOperationException(s"Column type not supported ${other}")
     }
   }
 
@@ -211,6 +214,75 @@ object ColumnReaders {
     }
 
     TupleColumn(name, data)
+  }
+
+  def uint8ColumnReader(name: String, nbRows: Int): Reader[UInt8Column] = Reader { buf =>
+    val data: Array[Short] = new Array[Short](nbRows)
+
+    var i: Int = 0
+    while(i < nbRows) {
+      data(i) = (0xff & buf.get()).toShort
+      i = i + 1
+    }
+
+    UInt8Column(name, data)
+  }
+
+  def uint16ColumnReader(name: String, nbRows: Int): Reader[UInt16Column] = Reader { buf =>
+    val data: Array[Int] = new Array[Int](nbRows)
+
+    var i: Int = 0
+    while(i < nbRows) {
+      data(i) = (0xffff & readShort(buf)).toInt
+      i = i + 1
+    }
+
+    UInt16Column(name, data)
+  }
+
+  def uint32ColumnReader(name: String, nbRows: Int): Reader[UInt32Column] = Reader { buf =>
+    val data: Array[Long] = new Array[Long](nbRows)
+
+    val bytes: Array[Byte] = new Array(4)
+
+    var i: Int = 0
+    while(i < nbRows) {
+      buf.get(bytes)
+
+      var result: Long = bytes(3) & 0xff
+      result = (result << 8) + (bytes(2) & 0xff)
+      result = (result << 8) + (bytes(1) & 0xff)
+      result = (result << 8) + (bytes(0) & 0xff)
+
+      data(i) = result
+      i = i + 1
+    }
+
+    UInt32Column(name, data)
+  }
+
+  def uint64ColumnReader(name: String, nbRows: Int): Reader[UInt64Column] = Reader { buf =>
+    val data: Array[BigInteger] = new Array[BigInteger](nbRows)
+
+    val bytes: Array[Byte] = new Array(8)
+
+    var i: Int = 0
+    while(i < nbRows) {
+
+      bytes(7) = buf.get()
+      bytes(6) = buf.get()
+      bytes(5) = buf.get()
+      bytes(4) = buf.get()
+      bytes(3) = buf.get()
+      bytes(2) = buf.get()
+      bytes(1) = buf.get()
+      bytes(0) = buf.get()
+
+      data(i) = new BigInteger(bytes)
+      i = i + 1
+    }
+
+    UInt64Column(name, data)
   }
 
   def uuidColumnReader(name: String, nbRows: Int): Reader[UuidColumn] = Reader { buf =>

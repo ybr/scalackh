@@ -1,5 +1,6 @@
 package ckh.protocol
 
+import java.math.BigInteger
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
@@ -21,6 +22,10 @@ object ClickhouseDataReaders {
       case "Int64" => int64Reader.read(buf)
       case "String" => stringReader.read(buf)
       case tuple(types) => tupleReader(types).read(buf)
+      case "UInt8" => uint8Reader.read(buf)
+      case "UInt16" => uint16Reader.read(buf)
+      case "UInt32" => uint32Reader.read(buf)
+      case "UInt64" => uint64Reader.read(buf)
       case "UUID" => uuidReader.read(buf)
       case other => throw new UnsupportedOperationException(s"Unsupported data type ${other}")
     }
@@ -57,6 +62,44 @@ object ClickhouseDataReaders {
     val readers: List[Reader[ClickhouseData]] = types.map(dataReader).toList
 
     Reader(buf => TupleData(readers.map(_.read(buf))))
+  }
+
+  val uint8Reader: Reader[UInt8Data] = Reader { buf =>
+    UInt8Data((0xff & buf.get()).toShort)
+  }
+
+  val uint16Reader: Reader[UInt16Data] = Reader { buf =>
+    UInt16Data((0xffff & readShort(buf)).toInt)
+  }
+
+  val uint32Reader: Reader[UInt32Data] = {
+    val bytes: Array[Byte] = new Array(4)
+    Reader { buf =>
+      buf.get(bytes)
+
+      var result: Long = bytes(3) & 0xff
+      result = (result << 8) + (bytes(2) & 0xff)
+      result = (result << 8) + (bytes(1) & 0xff)
+      result = (result << 8) + (bytes(0) & 0xff)
+
+      UInt32Data(result)
+    }
+  }
+
+  val uint64Reader: Reader[UInt64Data] = {
+    val bytes: Array[Byte] = new Array(8)
+    Reader { buf =>
+      bytes(7) = buf.get()
+      bytes(6) = buf.get()
+      bytes(5) = buf.get()
+      bytes(4) = buf.get()
+      bytes(3) = buf.get()
+      bytes(2) = buf.get()
+      bytes(1) = buf.get()
+      bytes(0) = buf.get()
+
+      UInt64Data(new BigInteger(bytes))
+    }
   }
 
   val uuidReader: Reader[UuidData] = Reader { buf =>
