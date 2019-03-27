@@ -1,8 +1,8 @@
-package ckh.protocol
+package scalackh.protocol.rw
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-import LEB128._
+import scalackh.protocol.rw.LEB128.readVarInt
 
 object DefaultReaders {
   def readBool(buf: ByteBuffer): Boolean = buf.get() != 0

@@ -1,10 +1,10 @@
-package ckh.protocol
+package scalackh.protocol.rw
 
-import ckh.native._
-import ckh.protocol.ColumnReaders._
-import ckh.protocol.DefaultReaders._
-import ckh.protocol.PacketTypes.Server._
-import ckh.protocol.LEB128._
+import scalackh.protocol._
+import scalackh.protocol.rw.ColumnDataReaders._
+import scalackh.protocol.rw.DefaultReaders._
+import scalackh.protocol.rw.LEB128.readVarInt
+import scalackh.protocol.rw.PacketTypes.Server._
 
 object ServerPacketReaders {
   val protocol: Reader[ServerPacket] = Reader { buf =>
@@ -120,7 +120,7 @@ object ServerPacketReaders {
       val columnName = readString(buf)
       val columnType = readString(buf)
 
-      columnReader(columnName, nbRows, columnType).read(buf)
+      Column(columnName, columnDataReader(nbRows, columnType).read(buf))
     }.toList
 
     Block(maybeTableName, info, nbColumns, nbRows, columns)

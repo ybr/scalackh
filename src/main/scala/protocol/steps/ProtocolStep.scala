@@ -1,9 +1,8 @@
-package ckh
-
-import ckh.native._
-import ckh.protocol._
+package scalackh.protocol.steps
 
 import java.nio.ByteBuffer
+
+import scalackh.protocol._
 
 sealed trait ProtocolStep
 case class Cont(next: (ByteBuffer, ByteBuffer) => ProtocolStep) extends ProtocolStep

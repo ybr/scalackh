@@ -1,10 +1,10 @@
-package ckh
+package scalackh.client.sync
 
-import ckh.native._
+import scalackh.protocol._
+import scalackh.protocol.steps._
 import java.io.{BufferedInputStream, BufferedOutputStream, InputStream, OutputStream}
 import java.net.{InetAddress, Socket}
 import java.nio.ByteBuffer
-import utils._
 
 class Client(
   val address: InetAddress,
@@ -15,11 +15,8 @@ class Client(
   def connect(): Connection = {
     val socket = new Socket(address, port)
 
-    val is = new BufferedInputStream(new DumpPacketInputStream(socket.getInputStream()), Client.BUFFER_SIZE)
-    val os = new BufferedOutputStream(new DumpPacketOutputStream(socket.getOutputStream()), Client.BUFFER_SIZE)
-
-    // val is = new BufferedInputStream(socket.getInputStream(), Client.BUFFER_SIZE)
-    // val os = new BufferedOutputStream(socket.getOutputStream(), Client.BUFFER_SIZE)
+    val is = new BufferedInputStream(socket.getInputStream(), Client.BUFFER_SIZE)
+    val os = new BufferedOutputStream(socket.getOutputStream(), Client.BUFFER_SIZE)
 
     val in = ByteBuffer.allocate(Client.BUFFER_SIZE)
     val out = ByteBuffer.allocate(Client.BUFFER_SIZE)
@@ -40,9 +37,9 @@ class Client(
 
 object Client {
   val version = Version(19, 1, 6)
-  val name = "scala-client"
+  val name = "scalackh"
 
-  val BUFFER_SIZE: Int = 4096 //1048576
+  val BUFFER_SIZE: Int = 1024 * 1024 //  1 MB
 
   def apply(
     host: String,
@@ -75,7 +72,7 @@ object Connection {
     var currentStep: ProtocolStep = step
     var done: Boolean = false
 
-    def hasNext(): Boolean = !done
+    def hasNext: Boolean = !done
 
     def next(): ProtocolStep = {
       if(done) throw new IllegalStateException("Stream exhausted")

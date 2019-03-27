@@ -1,4 +1,4 @@
-package ckh.native
+package scalackh.protocol
 
 sealed trait ServerPacket
 

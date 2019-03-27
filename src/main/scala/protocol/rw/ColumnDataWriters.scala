@@ -1,14 +1,13 @@
-package ckh.protocol
+package scalackh.protocol.rw
 
 import java.nio.{ByteBuffer, ByteOrder}
-import java.time.{LocalDate, LocalDateTime, ZoneOffset}
+import java.time.ZoneOffset
 
-import ckh.native._
-import DefaultWriters._
+import scalackh.protocol._
+import scalackh.protocol.rw.DefaultWriters._
 
-object ColumnWriters {
-  val dateColumnWriter: Writer[DateColumn] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+object ColumnDataWriters {
+  val dateColumnDataWriter: Writer[DateColumnData] = Writer { (col, buf) =>
     writeString("Date", buf)
 
     col.data.foreach { date =>
@@ -16,8 +15,7 @@ object ColumnWriters {
     }
   }
 
-  val datetimeColumnWriter: Writer[DateTimeColumn] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+  val datetimeColumnDataWriter: Writer[DateTimeColumnData] = Writer { (col, buf) =>
     writeString("DateTime", buf)
 
     col.data.foreach { datetime =>
@@ -25,44 +23,46 @@ object ColumnWriters {
     }
   }
 
-  val float32ColumnWriter: Writer[Float32Column] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+  // val enum8ColumnDataWriter: Writer[Enum8ColumnData] = Writer { (col, buf) =>
+  //   val enumDefs: String = col.enums.toList.sortBy(_._1).map(t => t._1 + " = " + t._2).mkString(",")
+  //   writeString(s"Enum8($enumDefs)", buf)
+  //   col.data.foreach { e =>
+  //     val b: Byte = (e & 0xff).toByte
+  //     buf.put(b)
+  //   }
+  // }
+
+  val float32ColumnDataWriter: Writer[Float32ColumnData] = Writer { (col, buf) =>
     writeString("Float32", buf)
     col.data.foreach(writeFloat(_, buf))
   }
 
-  val float64ColumnWriter: Writer[Float64Column] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+  val float64ColumnDataWriter: Writer[Float64ColumnData] = Writer { (col, buf) =>
     writeString("Float64", buf)
     col.data.foreach(writeDouble(_, buf))
   }
 
-  val int8ColumnWriter: Writer[Int8Column] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+  val int8ColumnDataWriter: Writer[Int8ColumnData] = Writer { (col, buf) =>
     writeString("Int8", buf)
     col.data.foreach(buf.put)
   }
 
-  val int16ColumnWriter: Writer[Int16Column] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+  val int16ColumnDataWriter: Writer[Int16ColumnData] = Writer { (col, buf) =>
     writeString("Int16", buf)
     col.data.foreach(writeShort(_, buf))
   }
 
-  val int32ColumnWriter: Writer[Int32Column] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+  val int32ColumnDataWriter: Writer[Int32ColumnData] = Writer { (col, buf) =>
     writeString("Int32", buf)
     col.data.foreach(writeInt(_, buf))
   }
 
-  val int64ColumnWriter: Writer[Int64Column] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+  val int64ColumnDataWriter: Writer[Int64ColumnData] = Writer { (col, buf) =>
     writeString("Int64", buf)
     col.data.foreach(writeLong(_, buf))
   }
 
-  val stringColumnWriter: Writer[StringColumn] = Writer { (col, buf) =>
-    writeString(col.name, buf)
+  val stringColumnDataWriter: Writer[StringColumnData] = Writer { (col, buf) =>
     writeString("String", buf)
     col.data.foreach(writeString(_, buf))
   }
@@ -71,23 +71,27 @@ object ColumnWriters {
     buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putShort(s)
     buf.order(ByteOrder.BIG_ENDIAN)
+    ()
   }
 
   def writeLong(n: Long, buf: ByteBuffer): Unit = {
     buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putLong(n)
     buf.order(ByteOrder.BIG_ENDIAN)
+    ()
   }
 
   def writeDouble(n: Double, buf: ByteBuffer): Unit = {
     buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putDouble(n)
     buf.order(ByteOrder.BIG_ENDIAN)
+    ()
   }
 
   def writeFloat(n: Float, buf: ByteBuffer): Unit = {
     buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putFloat(n)
     buf.order(ByteOrder.BIG_ENDIAN)
+    ()
   }
 }

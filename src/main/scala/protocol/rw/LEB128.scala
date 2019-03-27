@@ -1,4 +1,4 @@
-package ckh.protocol
+package scalackh.protocol.rw
 
 import java.nio.ByteBuffer
 
@@ -10,7 +10,7 @@ object LEB128 {
     var byte: Int = 0
     var shift: Int = 0
     do {
-      byte = buf.get()
+      byte = buf.get().toInt
       result |= (byte & 0x7f) << shift
       shift += 7
     } while((byte & 0x80) != 0)

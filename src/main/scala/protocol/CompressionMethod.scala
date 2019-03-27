@@ -1,4 +1,4 @@
-package ckh.native
+package scalackh.protocol
 
 sealed trait CompressionMethod
 case object LZ4 extends CompressionMethod

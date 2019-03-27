@@ -1,4 +1,4 @@
-package ckh.protocol
+package scalackh.protocol.rw
 
 import java.nio.ByteBuffer
 

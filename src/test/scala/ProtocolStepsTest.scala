@@ -1,4 +1,4 @@
-package ckh
+package scalackh.protocol.steps
 
 import java.nio.ByteBuffer
 
@@ -13,49 +13,33 @@ object ProtocolStepsTest extends SimpleTestSuite {
                       0x02, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x05).map(_.toByte))
 
     val emptyBuf = ByteBuffer.allocate(0)
-    println(emptyBuf)
 
     val initStep = ProtocolSteps.receiveResult
-    println(initStep)
-
-    println(initStep match {
-      case Cont(next) => next(emptyBuf, emptyBuf)
-    })
-    
 
     val step1 = initStep match {
-      case Cont(next) => next(data, emptyBuf)
+      case Cont(next) => next(emptyBuf, emptyBuf)
+      case state => throw new IllegalStateException(s"shall not reach state $state")
     }
-
-    println(step1)
 
     val step2 = step1 match {
       case Cont(next) => next(data, emptyBuf)
+      case state => throw new IllegalStateException(s"shall not reach state $state")
     }
-
-    println(step2)
 
     val step3 = step2 match {
       case Cont(next) => next(data, emptyBuf)
+      case state => throw new IllegalStateException(s"shall not reach state $state")
     }
-
-    println(step3)
 
     val step4 = step3 match {
       case Cont(next) => next(data, emptyBuf)
+      case state => throw new IllegalStateException(s"shall not reach state $state")
     }
-
-    println(step4)
 
     val step5 = step4 match {
       case Cont(next) => next(data, emptyBuf)
+      case state => throw new IllegalStateException(s"shall not reach state $state")
     }
-
-    println(step5)
-
-    // val nextStep = ProtocolSteps.receiveResult match {
-    //   case NeedsInput(next) => next(data, emptyBuf)
-    // }
 
     assertEquals(step5, Done)
   }

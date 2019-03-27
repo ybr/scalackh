@@ -1,11 +1,11 @@
-package ckh.native
+package scalackh.protocol
 
 case class Block(
   table: Option[String],
   info: BlockInfo,
   nbColumns: Int,
   nbRows: Int,
-  columns: List[Column]
+  columns: List[Column[ColumnData]]
 )
 
 object Block {

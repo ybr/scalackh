@@ -1,4 +1,4 @@
-package ckh.native
+package scalackh.protocol
 
 // Determines till which state SELECT query should be executed
 sealed trait QueryProcessingStage

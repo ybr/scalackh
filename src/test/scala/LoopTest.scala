@@ -1,9 +1,11 @@
-package ckh
+package scalackh.client.sync
 
 import java.io._
 import java.nio.ByteBuffer
 
 import minitest._
+
+import scalackh.protocol.steps._
 
 object LoopTest extends SimpleTestSuite {
   test("bytebuffer contains data read from inputstream") {

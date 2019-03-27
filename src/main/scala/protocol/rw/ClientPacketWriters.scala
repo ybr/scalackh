@@ -1,11 +1,10 @@
-package ckh.protocol
+package scalackh.protocol.rw
 
-import ckh.native._
-
-import ColumnWriters._
-import DefaultWriters._
-import PacketTypes.Client._
-import LEB128._
+import scalackh.protocol._
+import scalackh.protocol.rw.ColumnDataWriters._
+import scalackh.protocol.rw.DefaultWriters._
+import scalackh.protocol.rw.LEB128.writeVarInt
+import scalackh.protocol.rw.PacketTypes.Client._
 
 object ClientPacketWriters {
   val message: Writer[ClientPacket] = Writer { (m, buf) =>
@@ -32,7 +31,6 @@ object ClientPacketWriters {
   val queryWriter: Writer[Query] = Writer { (q, buf) =>
     writeVarInt(QUERY, buf)
     writeString(q.id.getOrElse(""), buf)
-    // buf.put(1.toByte)
     settingsWriter.write((), buf)
     stageWriter.write(q.stage, buf)
     writeVarInt(0, buf) // compression TODO
@@ -50,16 +48,21 @@ object ClientPacketWriters {
     writeVarInt(b.nbColumns, buf)
     writeVarInt(b.nbRows, buf)
 
-    b.columns.foreach {
-      case col: DateColumn => dateColumnWriter.write(col, buf)
-      case col: DateTimeColumn => datetimeColumnWriter.write(col, buf)
-      case col: Float32Column => float32ColumnWriter.write(col, buf)
-      case col: Float64Column => float64ColumnWriter.write(col, buf)
-      case col: Int8Column => int8ColumnWriter.write(col, buf)
-      case col: Int16Column => int16ColumnWriter.write(col, buf)
-      case col: Int32Column => int32ColumnWriter.write(col, buf)
-      case col: Int64Column => int64ColumnWriter.write(col, buf)
-      case col: StringColumn => stringColumnWriter.write(col, buf)
+    b.columns.foreach { col =>
+      writeString(col.name, buf)
+
+      col.data match {
+        case col: DateColumnData => dateColumnDataWriter.write(col, buf)
+        case col: DateTimeColumnData => datetimeColumnDataWriter.write(col, buf)
+        // case col: Enum8ColumnData => enum8ColumnDataWriter.write(col, buf)
+        case col: Float32ColumnData => float32ColumnDataWriter.write(col, buf)
+        case col: Float64ColumnData => float64ColumnDataWriter.write(col, buf)
+        case col: Int8ColumnData => int8ColumnDataWriter.write(col, buf)
+        case col: Int16ColumnData => int16ColumnDataWriter.write(col, buf)
+        case col: Int32ColumnData => int32ColumnDataWriter.write(col, buf)
+        case col: Int64ColumnData => int64ColumnDataWriter.write(col, buf)
+        case col: StringColumnData => stringColumnDataWriter.write(col, buf)
+      }
     }
   }
 
