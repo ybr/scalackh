@@ -5,7 +5,7 @@ import scala.util.Try
 import scalackh.protocol._
 
 trait ColumnTransposer[T] {
-  def toColumns(t: List[T]): List[ColumnData]
+  def toColumnsData(t: List[T]): List[ColumnData]
 
-  def fromColumns(l: List[ColumnData]): Try[List[T]]
+  def fromColumnsData(l: List[ColumnData]): Try[List[T]]
 }

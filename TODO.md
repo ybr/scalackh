@@ -1,12 +1,10 @@
 Milestone
 
 # 1
-
 - algebra to drive protocol steps
 - support for column types (date, datetime, string, float32/64, int8/16/32/64)
 
 # 2
-
 - shapeless auto-derivation (transform case class from/to columns)
 - java.io client frontend
 
@@ -15,16 +13,21 @@ Milestone
 
 # 4
 - tests
- 
+- support for column types (simple 1d-array, simple nullable, enum8/16, fixedstring, uint8/16/32/64, nested, uuid)
+
 # 5
-
-- support for column types (simple 1d-array, simple nullable, enum8/16, fixedstring, uint8/16/32/64, nested, tuple, uuid)
-
-# 6
-- optimization
+- reactive frontend (netty + monix)
 
 # 7
-- reactive frontend (netty + monix)
+- settings
+ 
+# 8
+- support for column types (array, tuple)
+
+# 9
+- performance jmh
+- optimization
+
 
 Reads
 

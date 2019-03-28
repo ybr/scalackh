@@ -1,4 +1,4 @@
-package utils
+package scalackh.client.utils
 
 import java.io.{FilterInputStream, InputStream}
 

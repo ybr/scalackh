@@ -8,9 +8,9 @@ import scalackh.protocol._
 
 trait ShapelessColumnTransposers {
   implicit val columnTransposerHNil: ColumnTransposer[HNil] = new ColumnTransposer[HNil] {
-    def toColumns(p: List[HNil]): List[ColumnData] = List.empty
+    def toColumnsData(p: List[HNil]): List[ColumnData] = List.empty
 
-    def fromColumns(l: List[ColumnData]): Try[List[HNil]] = Success(List.empty)
+    def fromColumnsData(l: List[ColumnData]): Try[List[HNil]] = Success(List.empty)
   }
 
   implicit def columnizeCons[H, T <: HList](
@@ -18,17 +18,17 @@ trait ShapelessColumnTransposers {
       hc: Lazy[ColumnTransposer[H]],
       tc: Lazy[ColumnTransposer[T]]
   ): ColumnTransposer[H :: T] = new ColumnTransposer[H :: T] {
-    def toColumns(p: List[H :: T]): List[ColumnData] = {
+    def toColumnsData(p: List[H :: T]): List[ColumnData] = {
       val heads = p.map(_.head)
       val tails = p.map(_.tail)
-      hc.value.toColumns(heads) ++ tc.value.toColumns(tails)
+      hc.value.toColumnsData(heads) ++ tc.value.toColumnsData(tails)
     }
 
-    def fromColumns(cols: List[ColumnData]): Try[List[H :: T]] = {
-      cols.headOption.fold[Try[List[H :: T]]](Failure(new RuntimeException("Not enough columns to feed columnTransposer"))) { col =>
+    def fromColumnsData(cols: List[ColumnData]): Try[List[H :: T]] = {
+      cols.headOption.fold[Try[List[H :: T]]](Failure(new RuntimeException("Not enough columns to feed shapeless column transposer"))) { col =>
         for {
-          heads <- hc.value.fromColumns(List(col))
-          tails <- tc.value.fromColumns(cols.tail)
+          heads <- hc.value.fromColumnsData(List(col))
+          tails <- tc.value.fromColumnsData(cols.tail)
         } yield {
           if(tails.isEmpty) { // if tails is empty we certainly reached HNil
             val emptyT = HNil.asInstanceOf[T]
@@ -41,8 +41,8 @@ trait ShapelessColumnTransposers {
   }
 
   implicit def columnzeDeriveInstance[F, G](implicit gen: Generic.Aux[F, G], cg: ColumnTransposer[G]): ColumnTransposer[F] = new ColumnTransposer[F] {
-    def toColumns(f: List[F]): List[ColumnData] = cg.toColumns(f.map(gen.to))
+    def toColumnsData(f: List[F]): List[ColumnData] = cg.toColumnsData(f.map(gen.to))
 
-    def fromColumns(cols: List[ColumnData]): Try[List[F]] = cg.fromColumns(cols).map(_.map(gen.from))
+    def fromColumnsData(cols: List[ColumnData]): Try[List[F]] = cg.fromColumnsData(cols).map(_.map(gen.from))
   }
 }
