@@ -62,6 +62,9 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard"               // Warn when non-Unit expression results are unused.
 )
 
+scalacOptions in (Compile, console) ~= (_ filterNot (_.startsWith("-Ywarn-unused")))
+scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value
+
 addCompilerPlugin("io.tryp" % "splain" % "0.4.0" cross CrossVersion.patch)
 
 resolvers += "jitpack" at "https://jitpack.io"
