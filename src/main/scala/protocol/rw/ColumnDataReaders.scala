@@ -37,7 +37,7 @@ object ColumnDataReaders {
       case "Int32" => int32ColumnDataReader(nbRows).read(buf)
       case "Int64" => int64ColumnDataReader(nbRows).read(buf)
       // case nullable(nullableType) => nullableColumnDataReader(nbRows, columnDataReader(nbRows, nullableType)).read(buf)
-      case "String" => stringColumnDataReader(nbRows).read(buf)
+      // case "String" => stringColumnDataReader(nbRows).read(buf)
       // case tuple(types) => tupleColumnDataReader(nbRows, types).read(buf)
       // case "UInt8" => uint8ColumnDataReader(nbRows).read(buf)
       // case "UInt16" => uint16ColumnDataReader(nbRows).read(buf)
@@ -56,27 +56,33 @@ object ColumnDataReaders {
   // }
 
   def dateColumnDataReader(nbRows: Int): Reader[DateColumnData] = Reader { buf =>
-    val data: Array[LocalDate] = new Array[LocalDate](nbRows)
+    if(buf.remaining < nbRows * 2) NotEnough
+    else {
+      val data: Array[LocalDate] = new Array[LocalDate](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = LocalDate.ofEpochDay(readShort(buf).toLong)
-      i = i + 1
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = LocalDate.ofEpochDay(readShort(buf).toLong)
+        i = i + 1
+      }
+
+      Consumed(DateColumnData(data))
     }
-
-    DateColumnData(data)
   }
 
   def datetimeColumnDataReader(nbRows: Int): Reader[DateTimeColumnData] = Reader { buf =>
-    val data: Array[LocalDateTime] = new Array[LocalDateTime](nbRows)
+    if(buf.remaining < nbRows * 4) NotEnough
+    else {
+      val data: Array[LocalDateTime] = new Array[LocalDateTime](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = LocalDateTime.ofEpochSecond(readInt(buf).toLong, 0, ZoneOffset.UTC)
-      i = i + 1
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = LocalDateTime.ofEpochSecond(readInt(buf).toLong, 0, ZoneOffset.UTC)
+        i = i + 1
+      }
+
+      Consumed(DateTimeColumnData(data))
     }
-
-    DateTimeColumnData(data)
   }
 
   // def enum8ColumnDataReader(enums: Map[Int, String], nbRows: Int): Reader[EnumColumnData] = Reader { buf =>
@@ -116,75 +122,93 @@ object ColumnDataReaders {
   // }
 
   def float32ColumnDataReader(nbRows: Int): Reader[Float32ColumnData] = Reader { buf =>
-    val data: Array[Float] = new Array[Float](nbRows)
+    if(buf.remaining < nbRows * 4) NotEnough
+    else {
+      val data: Array[Float] = new Array[Float](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = readFloat(buf)
-      i = i + 1
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = readFloat(buf)
+        i = i + 1
+      }
+
+      Consumed(Float32ColumnData(data))
     }
-
-    Float32ColumnData(data)
   }
 
   def float64ColumnDataReader(nbRows: Int): Reader[Float64ColumnData] = Reader { buf =>
-    val data: Array[Double] = new Array[Double](nbRows)
+    if(buf.remaining < nbRows * 8) NotEnough
+    else {
+      val data: Array[Double] = new Array[Double](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = readDouble(buf)
-      i = i + 1
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = readDouble(buf)
+        i = i + 1
+      }
+
+      Consumed(Float64ColumnData(data))
     }
-
-    Float64ColumnData(data)
   }
 
   def int8ColumnDataReader(nbRows: Int): Reader[Int8ColumnData] = Reader { buf =>
-    val data: Array[Byte] = new Array[Byte](nbRows)
+    if(buf.remaining < nbRows) NotEnough
+    else {
+      val data: Array[Byte] = new Array[Byte](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = buf.get()
-      i = i + 1
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = buf.get()
+        i = i + 1
+      }
+
+      Consumed(Int8ColumnData(data))
     }
-
-    Int8ColumnData(data)
   }
 
   def int16ColumnDataReader(nbRows: Int): Reader[Int16ColumnData] = Reader { buf =>
-    val data: Array[Short] = new Array[Short](nbRows)
+    if(buf.remaining < nbRows * 2) NotEnough
+    else {
+      val data: Array[Short] = new Array[Short](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = readShort(buf)
-      i = i + 1
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = readShort(buf)
+        i = i + 1
+      }
+
+      Consumed(Int16ColumnData(data))
     }
-
-    Int16ColumnData(data)
   }
 
   def int32ColumnDataReader(nbRows: Int): Reader[Int32ColumnData] = Reader { buf =>
-    val data: Array[Int] = new Array[Int](nbRows)
+    if(buf.remaining < nbRows * 4) NotEnough
+    else {
+      val data: Array[Int] = new Array[Int](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = readInt(buf)
-      i = i + 1
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = readInt(buf)
+        i = i + 1
+      }
+
+      Consumed(Int32ColumnData(data))
     }
-
-    Int32ColumnData(data)
   }
 
   def int64ColumnDataReader(nbRows: Int): Reader[Int64ColumnData] = Reader { buf =>
-    val data: Array[Long] = new Array[Long](nbRows)
+    if(buf.remaining < nbRows * 8) NotEnough
+    else {
+      val data: Array[Long] = new Array[Long](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = readLong(buf)
-      i = i + 1
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = readLong(buf)
+        i = i + 1
+      }
+
+      Consumed(Int64ColumnData(data))
     }
-
-    Int64ColumnData(data)
   }
 
   // def nullableColumnDataReader(nbRows: Int, reader: Reader[ColumnData]): Reader[NullableColumnData] = Reader { buf =>
@@ -199,17 +223,17 @@ object ColumnDataReaders {
   //   NullableColumnData(nulls, reader.read(buf))
   // }
 
-  def stringColumnDataReader(nbRows: Int): Reader[StringColumnData] = Reader { buf =>
-    val data: Array[String] = new Array[String](nbRows)
+  // def stringColumnDataReader(nbRows: Int): Reader[StringColumnData] = Reader { buf =>
+  //   val data: Array[String] = new Array[String](nbRows)
 
-    var i: Int = 0
-    while(i < nbRows) {
-      data(i) = readString(buf)
-      i = i + 1
-    }
+  //   var i: Int = 0
+  //   while(i < nbRows) {
+  //     data(i) = readString(buf)
+  //     i = i + 1
+  //   }
 
-    StringColumnData(data)
-  }
+  //   StringColumnData(data)
+  // }
 
   // def tupleColumnDataReader(nbRows: Int, typesStr: String): Reader[TupleColumnData] = Reader { buf =>
   //   val reader = tupleReader(typesStr)

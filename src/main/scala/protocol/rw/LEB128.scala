@@ -5,17 +5,20 @@ import java.nio.ByteBuffer
 // Encode integer of variable length using LEB128
 // https://en.wikipedia.org/wiki/LEB128
 object LEB128 {
-  def readVarInt(buf: ByteBuffer): Int = {
-    var result: Int = 0
-    var byte: Int = 0
-    var shift: Int = 0
-    do {
-      byte = buf.get().toInt
-      result |= (byte & 0x7f) << shift
-      shift += 7
-    } while((byte & 0x80) != 0)
+  val varIntReader: Reader[Int] = Reader { buf =>
+    if(buf.remaining < 1) NotEnough
+    else {
+      var result: Int = 0
+      var byte: Int = 0
+      var shift: Int = 0
+      do {
+        byte = buf.get().toInt
+        result |= (byte & 0x7f) << shift
+        shift += 7
+      } while((byte & 0x80) != 0)
 
-    result
+      Consumed(result)
+    }
   }
 
   def writeVarInt(n: Int, buf: ByteBuffer): Unit = {

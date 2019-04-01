@@ -2,25 +2,81 @@ package scalackh.protocol.rw
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-import scalackh.protocol.rw.LEB128.readVarInt
+import scalackh.protocol.rw.LEB128.varIntReader
 
 object DefaultReaders {
-  def readBool(buf: ByteBuffer): Boolean = buf.get() != 0
-
-  def readBytesFixed(length: Int, buf: ByteBuffer): Array[Byte] = {
-    val bytesFixedLength = new Array[Byte](length)
-    buf.get(bytesFixedLength)
-    bytesFixedLength
+  val boolReader: Reader[Boolean] = Reader { buf =>
+    if(buf.remaining == 0) NotEnough
+    else Consumed(buf.get() != 0)
   }
 
-  def readBytes(buf: ByteBuffer): Array[Byte] = {
-    val length: Int = readVarInt(buf)
-    readBytesFixed(length, buf)
+  def bytesFixedReader(length: Int): Reader[Array[Byte]] = Reader { buf =>
+    if(buf.remaining < length) NotEnough
+    else {
+      val bytesFixedLength = new Array[Byte](length)
+      buf.get(bytesFixedLength)
+      Consumed(bytesFixedLength)
+    }
   }
 
-  def readStringFixed(length: Int, buf: ByteBuffer): String = new String(readBytesFixed(length, buf), "UTF-8")
+  val bytesReader: Reader[Array[Byte]] = for {
+    length <- varIntReader
+    bytes <- bytesFixedReader(length)
+  } yield bytes
 
-  def readString(buf: ByteBuffer): String = new String(readBytes(buf), "UTF-8")
+  def stringFixedReader(length: Int): Reader[String] = bytesFixedReader(length).map(new String(_, "UTF-8"))
+
+  val stringReader: Reader[String] = bytesReader.map(new String(_, "UTF-8"))
+
+  val shortReader: Reader[Short] = Reader { buf =>
+    if(buf.remaining < 1) NotEnough
+    else {
+      buf.order(ByteOrder.LITTLE_ENDIAN)
+      val s = buf.getShort()
+      buf.order(ByteOrder.BIG_ENDIAN)
+      Consumed(s)
+    }
+  }
+
+  val intReader: Reader[Int] = Reader { buf =>
+    if(buf.remaining < 4) NotEnough
+    else {
+      buf.order(ByteOrder.LITTLE_ENDIAN)
+      val int = buf.getInt()
+      buf.order(ByteOrder.BIG_ENDIAN)
+      Consumed(int)
+    }
+  }
+
+  val longReader: Reader[Long] = Reader { buf =>
+    if(buf.remaining < 8) NotEnough
+    else {
+      buf.order(ByteOrder.LITTLE_ENDIAN)
+      val s = buf.getLong()
+      buf.order(ByteOrder.BIG_ENDIAN)
+      Consumed(s)
+    }
+  }
+
+  val floatReader: Reader[Float] = Reader { buf =>
+    if(buf.remaining < 4) NotEnough
+    else {
+      buf.order(ByteOrder.LITTLE_ENDIAN)
+      val s = buf.getFloat()
+      buf.order(ByteOrder.BIG_ENDIAN)
+      Consumed(s)
+    }
+  }
+
+  val doubleReader: Reader[Double] = Reader { buf =>
+    if(buf.remaining < 8) NotEnough
+    else {
+      buf.order(ByteOrder.LITTLE_ENDIAN)
+      val s = buf.getDouble()
+      buf.order(ByteOrder.BIG_ENDIAN)
+      Consumed(s)
+    }
+  }
 
   def readShort(buf: ByteBuffer): Short = {
     buf.order(ByteOrder.LITTLE_ENDIAN)

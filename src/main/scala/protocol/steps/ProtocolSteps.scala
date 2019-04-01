@@ -1,7 +1,7 @@
 package scalackh.protocol.steps
 
 import scalackh.protocol._
-import scalackh.protocol.rw.{ClientPacketWriters, ServerPacketReaders}
+import scalackh.protocol.rw._
 
 object ProtocolSteps {
   val MAX_ROWS_IN_BLOCK = 10000
@@ -12,27 +12,35 @@ object ProtocolSteps {
   }
 
   val receiveHello: ProtocolStep = NeedsInput.i { buf =>
-    ServerPacketReaders.protocol.read(buf) match {
-      case info: ServerInfo => Emit(info, Done)
-      case other => Error("Unexpected packet: " + other)
+    val decodedPacket: DecoderResult[ServerPacket] = ServerPacketReaders.protocol.read(buf)
+
+    decodedPacket match {
+      case Consumed(packet) => packet match {
+        case info: ServerInfo => Emit(info, Done)
+        case other => Error("Unexpected packet: " + other)
+      }
+      case NotEnough => receiveHello
     }
   }
 
-  val receiveResult: ProtocolStep = multipacket(NeedsInput.i { buf =>
-    val packet = ServerPacketReaders.protocol.read(buf)
-    packet match {
-      case p: ServerInfo => Error("Unexpected packet: " + p)
-      case p: ServerDataBlock => Emit(p, receiveResult)
-      case p: Progress => Emit(p, receiveResult)
-      case p: ProfileInfo => Emit(p, receiveResult)
-      case p: TotalsBlock => Emit(p, receiveResult)
-      case p: ExtremesBlock => Emit(p, receiveResult)
-      case p: LogBlock => Emit(p, receiveResult)
-      case p: ServerException => Emit(p, Done)
-      case Pong => Emit(Pong, receiveResult)
-      case EndOfStream => Done
+  val receiveResult: ProtocolStep = Cont.i { buf =>
+    val decodedPacket: DecoderResult[ServerPacket] = ServerPacketReaders.protocol.read(buf)
+    decodedPacket match {
+      case NotEnough => NeedsInput(receiveResult)
+      case Consumed(packet) => packet match {
+        case p: ServerInfo => Error("Unexpected packet: " + p)
+        case p: ServerDataBlock => Emit(p, receiveResult)
+        case p: Progress => Emit(p, receiveResult)
+        case p: ProfileInfo => Emit(p, receiveResult)
+        case p: TotalsBlock => Emit(p, receiveResult)
+        case p: ExtremesBlock => Emit(p, receiveResult)
+        case p: LogBlock => Emit(p, receiveResult)
+        case p: ServerException => Emit(p, Done)
+        case Pong => Emit(Pong, receiveResult)
+        case EndOfStream => Done
+      }
     }
-  })
+  }
 
   def execute(q: String, externalTables: Iterator[Block], values: Iterator[Block]): ProtocolStep = Cont.o { buf =>
     ClientPacketWriters.message.write(Query(None, Complete, None, q), buf)
@@ -48,10 +56,13 @@ object ProtocolSteps {
   }
 
   def receiveSample(nextWithSample: Block => ProtocolStep): ProtocolStep = NeedsInput.i { buf =>
-    val packet = ServerPacketReaders.protocol.read(buf)
-    packet match {
-      case p: ServerDataBlock => Emit(p, Cont(nextWithSample(p.block)))
-      case other => Error("Unexpected packet: " + other)
+    val decoderPacket: DecoderResult[ServerPacket] = ServerPacketReaders.protocol.read(buf)
+    decoderPacket match {
+      case NotEnough => receiveSample(nextWithSample)
+      case Consumed(packet) => packet match {
+        case p: ServerDataBlock => Emit(p, Cont(nextWithSample(p.block)))
+        case other => Error("Unexpected packet: " + other)
+      }
     }
   }
 
@@ -83,14 +94,6 @@ object ProtocolSteps {
       ClientPacketWriters.message.write(ClientDataBlock(maxSizeBlock), buf)
       sendBlock(remainingBlock)(next)
     }
-  }
-
-  def multipacket(step: ProtocolStep): ProtocolStep = step match {
-    case NeedsInput(next) => Cont { (i, o) =>
-      if(i.position < i.limit) multipacket(next(i, o))
-      else NeedsInput.i(_ => multipacket(NeedsInput(next)))
-    }
-    case other => other
   }
 
   // returns first block with nbRows less than or equals to maxSize, second block the remaining

@@ -30,6 +30,8 @@ object Cont {
 }
 
 object NeedsInput {
+  def apply(next: => ProtocolStep): ProtocolStep = NeedsInput((_, _) => next)
+
   def i(next: ByteBuffer => ProtocolStep): ProtocolStep = NeedsInput { (i, _) =>
     next(i)
   }
