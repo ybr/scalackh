@@ -22,7 +22,7 @@ object ColumnDataDecoders {
     columnType match {
       // case array(elemType) => arrayColumnDataDecoder(nbRows, elemType).read(buf)
       case "Date" => dateColumnDataDecoder(nbRows)
-      case "DateTime" => datetimeColumnDataDecoder(nbRows)
+      case "DateTime" => dateTimeColumnDataDecoder(nbRows)
       // case enum8(enumStr) =>
       //   val enums: Map[Int, String] = enumsFromDef(enumStr)
       //   enum8ColumnDataDecoder(enums, nbRows)
@@ -70,7 +70,7 @@ object ColumnDataDecoders {
     }
   }
 
-  def datetimeColumnDataDecoder(nbRows: Int): Decoder[DateTimeColumnData] = Decoder { buf =>
+  def dateTimeColumnDataDecoder(nbRows: Int): Decoder[DateTimeColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 4) NotEnough
     else {
       val data: Array[LocalDateTime] = new Array[LocalDateTime](nbRows)

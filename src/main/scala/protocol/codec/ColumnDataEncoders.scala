@@ -7,13 +7,13 @@ import scalackh.protocol._
 import scalackh.protocol.codec.DefaultEncoders._
 
 object ColumnDataEncoders {
-  val dateArrayEncoder: Encoder[DateColumnData] = Encoder { (col, buf) =>
+  val dateColumnDataEncoder: Encoder[DateColumnData] = Encoder { (col, buf) =>
     col.data.foreach { date =>
       writeShort(date.toEpochDay().toShort, buf)
     }
   }
 
-  val datetimeColumnDataEncoder: Encoder[DateTimeColumnData] = Encoder { (col, buf) =>
+  val dateTimeColumnDataEncoder: Encoder[DateTimeColumnData] = Encoder { (col, buf) =>
     col.data.foreach { datetime =>
       buf.putInt(datetime.toEpochSecond(ZoneOffset.UTC).toInt)
     }
@@ -91,10 +91,10 @@ object ColumnDataEncoders {
     col match {
       case col: DateColumnData =>
         writeString("Date", buf)
-        dateArrayEncoder.write(col, buf)
+        dateColumnDataEncoder.write(col, buf)
       case col: DateTimeColumnData =>
         writeString("DateTime", buf)
-        datetimeColumnDataEncoder.write(col, buf)
+        dateTimeColumnDataEncoder.write(col, buf)
       // case col: Enum8ColumnData => enum8ColumnDataEncoder.write(col, buf)
       case col: FixedStringColumnData =>
         writeString(s"FixedString(${col.strLength})", buf)
