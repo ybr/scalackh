@@ -1,6 +1,6 @@
 package scalackh.protocol.rw
 
-import java.nio.{ByteBuffer, ByteOrder}
+import java.nio.ByteBuffer
 
 import scalackh.protocol.rw.LEB128.writeVarInt
 
@@ -12,9 +12,7 @@ object DefaultWriters {
   }
 
   def writeInt(n: Int, buf: ByteBuffer): Unit = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putInt(n)
-    buf.order(ByteOrder.BIG_ENDIAN)
     ()
   }
 

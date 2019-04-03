@@ -1,6 +1,6 @@
 package scalackh.protocol.rw
 
-import java.nio.{ByteBuffer, ByteOrder}
+import java.nio.ByteBuffer
 import java.time.ZoneOffset
 
 import scalackh.protocol._
@@ -68,30 +68,22 @@ object ColumnDataWriters {
   }
 
   def writeShort(s: Short, buf: ByteBuffer): Unit = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putShort(s)
-    buf.order(ByteOrder.BIG_ENDIAN)
     ()
   }
 
   def writeLong(n: Long, buf: ByteBuffer): Unit = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putLong(n)
-    buf.order(ByteOrder.BIG_ENDIAN)
     ()
   }
 
   def writeDouble(n: Double, buf: ByteBuffer): Unit = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putDouble(n)
-    buf.order(ByteOrder.BIG_ENDIAN)
     ()
   }
 
   def writeFloat(n: Float, buf: ByteBuffer): Unit = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
     buf.putFloat(n)
-    buf.order(ByteOrder.BIG_ENDIAN)
     ()
   }
 }

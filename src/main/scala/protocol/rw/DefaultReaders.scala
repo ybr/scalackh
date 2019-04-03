@@ -1,7 +1,5 @@
 package scalackh.protocol.rw
 
-import java.nio.{ByteBuffer, ByteOrder}
-
 import scalackh.protocol.rw.LEB128.varIntReader
 
 object DefaultReaders {
@@ -30,86 +28,35 @@ object DefaultReaders {
 
   val shortReader: Reader[Short] = Reader { buf =>
     if(buf.remaining < 1) NotEnough
-    else {
-      buf.order(ByteOrder.LITTLE_ENDIAN)
-      val s = buf.getShort()
-      buf.order(ByteOrder.BIG_ENDIAN)
-      Consumed(s)
-    }
+    else Consumed(buf.getShort())
   }
 
   val intReader: Reader[Int] = Reader { buf =>
     if(buf.remaining < 4) NotEnough
-    else {
-      buf.order(ByteOrder.LITTLE_ENDIAN)
-      val int = buf.getInt()
-      buf.order(ByteOrder.BIG_ENDIAN)
-      Consumed(int)
-    }
+    else Consumed(buf.getInt())
   }
 
-  val longReader: Reader[Long] = Reader { buf =>
-    if(buf.remaining < 8) NotEnough
-    else {
-      buf.order(ByteOrder.LITTLE_ENDIAN)
-      val s = buf.getLong()
-      buf.order(ByteOrder.BIG_ENDIAN)
-      Consumed(s)
-    }
-  }
+  // val longReader: Reader[Long] = Reader { buf =>
+  //   if(buf.remaining < 8) NotEnough
+  //   else {
+  //     val s = buf.getLong()
+  //     Consumed(s)
+  //   }
+  // }
 
-  val floatReader: Reader[Float] = Reader { buf =>
-    if(buf.remaining < 4) NotEnough
-    else {
-      buf.order(ByteOrder.LITTLE_ENDIAN)
-      val s = buf.getFloat()
-      buf.order(ByteOrder.BIG_ENDIAN)
-      Consumed(s)
-    }
-  }
+  // val floatReader: Reader[Float] = Reader { buf =>
+  //   if(buf.remaining < 4) NotEnough
+  //   else {
+  //     val s = buf.getFloat()
+  //     Consumed(s)
+  //   }
+  // }
 
-  val doubleReader: Reader[Double] = Reader { buf =>
-    if(buf.remaining < 8) NotEnough
-    else {
-      buf.order(ByteOrder.LITTLE_ENDIAN)
-      val s = buf.getDouble()
-      buf.order(ByteOrder.BIG_ENDIAN)
-      Consumed(s)
-    }
-  }
-
-  def readShort(buf: ByteBuffer): Short = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
-    val s = buf.getShort()
-    buf.order(ByteOrder.BIG_ENDIAN)
-    s
-  }
-
-  def readInt(buf: ByteBuffer): Int = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
-    val int = buf.getInt()
-    buf.order(ByteOrder.BIG_ENDIAN)
-    int
-  }
-
-  def readLong(buf: ByteBuffer): Long = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
-    val s = buf.getLong()
-    buf.order(ByteOrder.BIG_ENDIAN)
-    s
-  }
-
-  def readFloat(buf: ByteBuffer): Float = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
-    val s = buf.getFloat()
-    buf.order(ByteOrder.BIG_ENDIAN)
-    s
-  }
-
-  def readDouble(buf: ByteBuffer): Double = {
-    buf.order(ByteOrder.LITTLE_ENDIAN)
-    val s = buf.getDouble()
-    buf.order(ByteOrder.BIG_ENDIAN)
-    s
-  }
+  // val doubleReader: Reader[Double] = Reader { buf =>
+  //   if(buf.remaining < 8) NotEnough
+  //   else {
+  //     val s = buf.getDouble()
+  //     Consumed(s)
+  //   }
+  // }
 }

@@ -2,7 +2,7 @@ package scalackh.client.core
 
 import java.io.{BufferedInputStream, BufferedOutputStream}
 import java.net.{InetAddress, Socket}
-import java.nio.ByteBuffer
+import java.nio.{ByteBuffer, ByteOrder}
 
 import scala.util.Try
 
@@ -18,8 +18,8 @@ case class CoreClient(address: InetAddress, port: Int, user: Option[String], pas
     val is = new BufferedInputStream(socket.getInputStream(), Client.BUFFER_SIZE)
     val os = new BufferedOutputStream(socket.getOutputStream(), Client.BUFFER_SIZE)
 
-    val in = ByteBuffer.allocate(Client.BUFFER_SIZE)
-    val out = ByteBuffer.allocate(Client.BUFFER_SIZE)
+    val in = ByteBuffer.allocate(Client.BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN)
+    val out = ByteBuffer.allocate(Client.BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN)
 
     val serverInfo: ServerInfo = ProtocolAlg.iterator(is, os, in, out, ProtocolSteps.sendHello(ClientInfo(
       name,

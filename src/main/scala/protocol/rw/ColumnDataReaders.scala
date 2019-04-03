@@ -3,7 +3,6 @@ package scalackh.protocol.rw
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 
 import scalackh.protocol._
-import scalackh.protocol.rw.DefaultReaders._
 
 object ColumnDataReaders {
   // val nullable = "Nullable\\((.+)\\)".r
@@ -62,7 +61,7 @@ object ColumnDataReaders {
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = LocalDate.ofEpochDay(readShort(buf).toLong)
+        data(i) = LocalDate.ofEpochDay(buf.getShort().toLong)
         i = i + 1
       }
 
@@ -77,7 +76,7 @@ object ColumnDataReaders {
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = LocalDateTime.ofEpochSecond(readInt(buf).toLong, 0, ZoneOffset.UTC)
+        data(i) = LocalDateTime.ofEpochSecond(buf.getInt().toLong, 0, ZoneOffset.UTC)
         i = i + 1
       }
 
@@ -128,7 +127,7 @@ object ColumnDataReaders {
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = readFloat(buf)
+        data(i) = buf.getFloat()
         i = i + 1
       }
 
@@ -143,7 +142,7 @@ object ColumnDataReaders {
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = readDouble(buf)
+        data(i) = buf.getDouble()
         i = i + 1
       }
 
@@ -173,7 +172,7 @@ object ColumnDataReaders {
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = readShort(buf)
+        data(i) = buf.getShort()
         i = i + 1
       }
 
@@ -188,7 +187,7 @@ object ColumnDataReaders {
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = readInt(buf)
+        data(i) = buf.getInt()
         i = i + 1
       }
 
@@ -203,7 +202,7 @@ object ColumnDataReaders {
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = readLong(buf)
+        data(i) = buf.getLong()
         i = i + 1
       }
 

@@ -38,6 +38,7 @@ object Reader {
     def read(buf: ByteBuffer): DecoderResult[T] = Consumed(value)
   }
 
+  // turn it tailrec
   def traverse[T](rs: List[Reader[T]]): Reader[List[T]] = new Reader[List[T]] {
     def read(buf: ByteBuffer): DecoderResult[List[T]] = {
       rs match {
