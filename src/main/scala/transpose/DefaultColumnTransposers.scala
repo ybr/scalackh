@@ -11,7 +11,10 @@ import scalackh.protocol._
 trait DefaultColumnTransposers {
   implicit val columnTransposerString: ColumnTransposer[String] = ColumnTransposerInstances.columnTransposerBuilder(
     StringColumnData(_),
-    { case StringColumnData(data) => data }
+    {
+      case StringColumnData(data) => data
+      case FixedStringColumnData(_, data) => data
+    }
   )
 
   implicit val columnTransposerByte: ColumnTransposer[Byte] = ColumnTransposerInstances.columnTransposerBuilder(

@@ -32,6 +32,10 @@ object ColumnDataEncoders {
   //   }
   // }
 
+  val fixedStringColumnDataEncoder: Encoder[FixedStringColumnData] = Encoder { (col, buf) =>
+    col.data.foreach(str => buf.put(str.getBytes("UTF-8")))
+  }
+
   val float32ColumnDataEncoder: Encoder[Float32ColumnData] = Encoder { (col, buf) =>
     writeString("Float32", buf)
     col.data.foreach(writeFloat(_, buf))

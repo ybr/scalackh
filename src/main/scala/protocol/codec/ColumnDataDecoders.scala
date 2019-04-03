@@ -7,7 +7,7 @@ import scalackh.protocol._
 
 object ColumnDataDecoders {
   // val nullable = "Nullable\\((.+)\\)".r
-  // val fixedString = "FixedString\\(([0-9]+)\\)".r
+  val fixedString = "FixedString\\(([0-9]+)\\)".r
   // val enum8 = "Enum8\\((.+)\\)".r
   // val enum16 = "Enum16\\((.+)\\)".r
   // val enumDef = "'(.+)' = ([0-9]+)".r
@@ -29,7 +29,7 @@ object ColumnDataDecoders {
       // case enum16(enumStr) =>
       //   val enums: Map[Int, String] = enumsFromDef(enumStr)
       //   enum16ColumnDataDecoder(enums, nbRows)
-      // case fixedString(strLength) => fixedStringColumnDataDecoder(strLength.toInt, nbRows)
+      case fixedString(strLength) => fixedStringColumnDataDecoder(strLength.toInt, nbRows)
       case "Float32" => float32ColumnDataDecoder(nbRows)
       case "Float64" => float64ColumnDataDecoder(nbRows)
       case "Int8" => int8ColumnDataDecoder(nbRows)
@@ -109,17 +109,22 @@ object ColumnDataDecoders {
   //   Enum16ColumnData(enums, data)
   // }
 
-  // def fixedStringColumnDataDecoder(strLength: Int, nbRows: Int): Decoder[FixedStringColumnData] = Decoder { buf =>
-  //   val data: Array[String] = new Array[String](nbRows)
+  def fixedStringColumnDataDecoder(strLength: Int, nbRows: Int): Decoder[FixedStringColumnData] = Decoder { buf =>
+    if(buf.remaining < nbRows * strLength) NotEnough
+    else {
+      val data: Array[String] = new Array[String](nbRows)
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     data(i) = readStringFixed(strLength, buf)
-  //     i = i + 1
-  //   }
+      var i: Int = 0
+      val bytes: Array[Byte] = new Array[Byte](strLength)
+      while(i < nbRows) {
+        buf.get(bytes)
+        data(i) =  new String(bytes, "UTF-8")
+        i = i + 1
+      }
 
-  //   FixedStringColumnData(strLength, data)
-  // }
+      Consumed(FixedStringColumnData(strLength, data))
+    }
+  }
 
   def float32ColumnDataDecoder(nbRows: Int): Decoder[Float32ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 4) NotEnough

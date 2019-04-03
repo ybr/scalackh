@@ -106,6 +106,9 @@ object ProtocolSteps {
         case DateTimeColumnData(data) =>  
           val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
           DateTimeColumnData(dataMaxSize) -> DateTimeColumnData(dataRemaining)
+        case FixedStringColumnData(strLength, data) =>  
+          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
+          FixedStringColumnData(strLength, dataMaxSize) -> FixedStringColumnData(strLength, dataRemaining)
         case Float32ColumnData(data) => 
           val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
           Float32ColumnData(dataMaxSize) -> Float32ColumnData(dataRemaining)
