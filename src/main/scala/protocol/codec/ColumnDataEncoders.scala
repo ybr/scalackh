@@ -19,7 +19,7 @@ object ColumnDataEncoders {
     writeString("DateTime", buf)
 
     col.data.foreach { datetime =>
-      writeInt(datetime.toEpochSecond(ZoneOffset.UTC).toInt, buf)
+      buf.putInt(datetime.toEpochSecond(ZoneOffset.UTC).toInt)
     }
   }
 
@@ -54,7 +54,7 @@ object ColumnDataEncoders {
 
   val int32ColumnDataEncoder: Encoder[Int32ColumnData] = Encoder { (col, buf) =>
     writeString("Int32", buf)
-    col.data.foreach(writeInt(_, buf))
+    col.data.foreach(buf.putInt)
   }
 
   val int64ColumnDataEncoder: Encoder[Int64ColumnData] = Encoder { (col, buf) =>
@@ -65,6 +65,14 @@ object ColumnDataEncoders {
   val stringColumnDataEncoder: Encoder[StringColumnData] = Encoder { (col, buf) =>
     writeString("String", buf)
     col.data.foreach(writeString(_, buf))
+  }
+
+  val uuidColumnDataEncoder: Encoder[UuidColumnData] = Encoder { (col, buf) =>
+    writeString("UUID", buf)
+    col.data.foreach { uuid =>
+      buf.putLong(uuid.getMostSignificantBits())
+      buf.putLong(uuid.getLeastSignificantBits())
+    }
   }
 
   def writeShort(s: Short, buf: ByteBuffer): Unit = {
@@ -85,5 +93,21 @@ object ColumnDataEncoders {
   def writeFloat(n: Float, buf: ByteBuffer): Unit = {
     buf.putFloat(n)
     ()
+  }
+
+  val columnDataEncoder: Encoder[ColumnData] = Encoder { (col, buf) =>
+    col match {
+      case col: DateColumnData => dateColumnDataEncoder.write(col, buf)
+      case col: DateTimeColumnData => datetimeColumnDataEncoder.write(col, buf)
+      // case col: Enum8ColumnData => enum8ColumnDataEncoder.write(col, buf)
+      case col: Float32ColumnData => float32ColumnDataEncoder.write(col, buf)
+      case col: Float64ColumnData => float64ColumnDataEncoder.write(col, buf)
+      case col: Int8ColumnData => int8ColumnDataEncoder.write(col, buf)
+      case col: Int16ColumnData => int16ColumnDataEncoder.write(col, buf)
+      case col: Int32ColumnData => int32ColumnDataEncoder.write(col, buf)
+      case col: Int64ColumnData => int64ColumnDataEncoder.write(col, buf)
+      case col: StringColumnData => stringColumnDataEncoder.write(col, buf)
+      case col: UuidColumnData => uuidColumnDataEncoder.write(col, buf)
+    } 
   }
 }

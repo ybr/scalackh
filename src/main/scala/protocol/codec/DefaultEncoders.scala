@@ -11,11 +11,6 @@ object DefaultEncoders {
     ()
   }
 
-  def writeInt(n: Int, buf: ByteBuffer): Unit = {
-    buf.putInt(n)
-    ()
-  }
-
   def writeString(str: String, buf: ByteBuffer): Unit = writeBytes(str.getBytes("UTF-8"), buf)
 
   def writeBytes(bytes: Array[Byte], buf: ByteBuffer): Unit = {

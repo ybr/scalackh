@@ -25,7 +25,6 @@ object ServerPacketDecoders {
       else Decoder.pure(())
     }
 
-
     recFieldDecoder.map(_ => BlockInfo(isOverflow, bucketNum)).read(buf)
   }
 

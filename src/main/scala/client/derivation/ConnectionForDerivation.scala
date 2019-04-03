@@ -19,7 +19,5 @@ case class ConnectionForDerivation(underlying: Connection) extends DerivationCon
     underlying.insert(sql, blocks)
   }
 
-  def insert(sql: String, values: Iterator[Block]): Unit = underlying.insert(sql, values)
-
   def disconnect(): Unit = underlying.disconnect()
 }

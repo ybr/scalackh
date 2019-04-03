@@ -50,19 +50,7 @@ object ClientPacketEncoders {
 
     b.columns.foreach { col =>
       writeString(col.name, buf)
-
-      col.data match {
-        case col: DateColumnData => dateColumnDataEncoder.write(col, buf)
-        case col: DateTimeColumnData => datetimeColumnDataEncoder.write(col, buf)
-        // case col: Enum8ColumnData => enum8ColumnDataEncoder.write(col, buf)
-        case col: Float32ColumnData => float32ColumnDataEncoder.write(col, buf)
-        case col: Float64ColumnData => float64ColumnDataEncoder.write(col, buf)
-        case col: Int8ColumnData => int8ColumnDataEncoder.write(col, buf)
-        case col: Int16ColumnData => int16ColumnDataEncoder.write(col, buf)
-        case col: Int32ColumnData => int32ColumnDataEncoder.write(col, buf)
-        case col: Int64ColumnData => int64ColumnDataEncoder.write(col, buf)
-        case col: StringColumnData => stringColumnDataEncoder.write(col, buf)
-      }
+      columnDataEncoder.write(col.data, buf)
     }
   }
 
@@ -70,7 +58,7 @@ object ClientPacketEncoders {
     writeVarInt(1, buf) // field num for isOverflow
     writeBool(bi.isOverflow, buf)
     writeVarInt(2, buf) // field num for bucket num
-    writeInt(bi.bucketNum, buf)
+    buf.putInt(bi.bucketNum)
     writeVarInt(0, buf) // end of fields
   }
 

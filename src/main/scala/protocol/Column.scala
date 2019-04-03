@@ -2,7 +2,7 @@ package scalackh.protocol
 
 // import java.math.BigInteger
 import java.time.{LocalDate, LocalDateTime}
-// import java.util.UUID
+import java.util.UUID
 
 case class Column[A](name: String, data: A)
 
@@ -34,7 +34,7 @@ case class Int64ColumnData(data: Array[Long]) extends IntegerColumnData
 // case class NullableColumnData(nulls: Array[Boolean], data: ColumnData) extends ColumnData
 case class StringColumnData(data: Array[String]) extends ColumnData
 // case class FixedStringColumnData(strLength: Int, data: Array[String]) extends ColumnData
-// case class UuidColumnData(data: Array[UUID]) extends ColumnData
+case class UuidColumnData(data: Array[UUID]) extends ColumnData
 // case class TupleColumnData(data: Array[TupleData]) extends ColumnData
 
 // sealed trait ClickhouseArray

@@ -127,6 +127,9 @@ object ProtocolSteps {
         case StringColumnData(data) =>  
           val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
           StringColumnData(dataMaxSize) -> StringColumnData(dataRemaining)
+        case UuidColumnData(data) =>  
+          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
+          UuidColumnData(dataMaxSize) -> UuidColumnData(dataRemaining)
       }
       val (colDataMaxSize, colDataRemaining) = dataCols
       Column(col.name, colDataMaxSize) -> Column(col.name, colDataRemaining)

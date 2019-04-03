@@ -1,6 +1,7 @@
 package scalackh.protocol.codec
 
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
+import java.util.UUID
 
 import scalackh.protocol._
 
@@ -42,7 +43,7 @@ object ColumnDataDecoders {
       // case "UInt16" => uint16ColumnDataDecoder(nbRows)
       // case "UInt32" => uint32ColumnDataDecoder(nbRows)
       // case "UInt64" => uint64ColumnDataDecoder(nbRows)
-      // case "UUID" => uuidColumnDataDecoder(nbRows)
+      case "UUID" => uuidColumnDataDecoder(nbRows)
 
       case other => throw new UnsupportedOperationException(s"Column type not supported ${other}")
     }
@@ -323,17 +324,20 @@ object ColumnDataDecoders {
   //   UInt64ColumnData(data)
   // }
 
-  // def uuidColumnDataDecoder(nbRows: Int): Decoder[UuidColumnData] = Decoder { buf =>
-  //   val data: Array[UUID] = new Array[UUID](nbRows)
+  def uuidColumnDataDecoder(nbRows: Int): Decoder[UuidColumnData] = Decoder { buf =>
+    if(buf.remaining < nbRows * 16) NotEnough
+    else {
+      val data: Array[UUID] = new Array[UUID](nbRows)
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     val mostSigBits: Long = readLong(buf)
-  //     val leastSigBits: Long = readLong(buf)
-  //     data(i) = new UUID(mostSigBits, leastSigBits)
-  //     i = i + 1
-  //   }
+      var i: Int = 0
+      while(i < nbRows) {
+        val mostSigBits: Long = buf.getLong()
+        val leastSigBits: Long = buf.getLong()
+        data(i) = new UUID(mostSigBits, leastSigBits)
+        i = i + 1
+      }
 
-  //   UuidColumnData(data)
-  // }
+      Consumed(UuidColumnData(data))
+    }
+  }
 }

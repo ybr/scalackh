@@ -1,6 +1,7 @@
 package scalackh.transpose
 
 import java.time.{LocalDate, LocalDateTime}
+import java.util.UUID
 
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
@@ -51,6 +52,11 @@ trait DefaultColumnTransposers {
   implicit val columnTransposerDateTime: ColumnTransposer[LocalDateTime] = ColumnTransposerInstances.columnTransposerBuilder(
     DateTimeColumnData(_),
     { case DateTimeColumnData(data) => data }
+  )
+
+  implicit val uuidTransposerString: ColumnTransposer[UUID] = ColumnTransposerInstances.columnTransposerBuilder(
+    UuidColumnData(_),
+    { case UuidColumnData(data) => data }
   )
 }
 
