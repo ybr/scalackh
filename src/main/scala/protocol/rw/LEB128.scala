@@ -6,19 +6,24 @@ import java.nio.ByteBuffer
 // https://en.wikipedia.org/wiki/LEB128
 object LEB128 {
   val varIntReader: Reader[Int] = Reader { buf =>
-    if(buf.remaining < 1) NotEnough
-    else {
-      var result: Int = 0
-      var byte: Int = 0
-      var shift: Int = 0
-      do {
+    var hasEnough: Boolean = true
+    var result: Int = 0
+    var byte: Int = 0
+    var shift: Int = 0
+
+    do {
+      if(buf.remaining >= 1) {
         byte = buf.get().toInt
         result |= (byte & 0x7f) << shift
         shift += 7
-      } while((byte & 0x80) != 0)
+      }
+      else {
+        hasEnough = false
+      }
+    } while((byte & 0x80) != 0 && hasEnough)
 
-      Consumed(result)
-    }
+    if(hasEnough) Consumed(result)
+    else NotEnough
   }
 
   def writeVarInt(n: Int, buf: ByteBuffer): Unit = {

@@ -8,29 +8,27 @@ import scalackh.protocol.rw.PacketTypes.Server._
 
 object ServerPacketReaders {
   val blockInfoReader: Reader[BlockInfo] = Reader { buf =>
-    // println(buf)
     var isOverflow: Boolean = false
     var bucketNum: Int = -1
 
-    var fieldNum: Int = 0
-    do {
-      fieldNum = varIntReader.read(buf) match {
-        case Consumed(n) => n
-        case NotEnough => throw new IllegalStateException(s"Not enough bytes to read block info")
+    val fieldReader: Reader[Int] = varIntReader.flatMap { fieldNum =>
+      val side = {
+        if(fieldNum == 1) boolReader.map(isOverflow = _)
+        else if(fieldNum == 2) intReader.map(bucketNum = _)
+        else Reader.pure(())
       }
+      side.map (_ => fieldNum)
+    }
 
-      if(fieldNum == 1) isOverflow = boolReader.read(buf) match {
-        case Consumed(b) => b
-        case NotEnough => throw new IllegalStateException(s"Not enough bytes to read block info")
-      }
-      else if(fieldNum == 2) bucketNum = intReader.read(buf) match {
-        case Consumed(b) => b
-        case NotEnough => throw new IllegalStateException(s"Not enough bytes to read block info")
-      }
-    } while (fieldNum != 0)
+    def recFieldReader: Reader[Unit] = fieldReader.flatMap { fieldNum =>
+      if(fieldNum != 0) recFieldReader.map(_ => ())
+      else Reader.pure(())
+    }
 
-    Consumed(BlockInfo(isOverflow, bucketNum))
+
+    recFieldReader.map(_ => BlockInfo(isOverflow, bucketNum)).read(buf)
   }
+
 
   val serverExceptionReader: Reader[ServerException] = for {
     code <- intReader

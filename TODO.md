@@ -10,6 +10,7 @@ Milestone
 
 # 3
 - performance (jmh, benchmarking)
+- fix decoders for leb128 and blockinfo fields to return a NotEnough in case, bench for 50M read
 
 # 4
 - tests
