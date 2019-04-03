@@ -7,17 +7,13 @@ import scalackh.protocol._
 import scalackh.protocol.codec.DefaultEncoders._
 
 object ColumnDataEncoders {
-  val dateColumnDataEncoder: Encoder[DateColumnData] = Encoder { (col, buf) =>
-    writeString("Date", buf)
-
+  val dateArrayEncoder: Encoder[DateColumnData] = Encoder { (col, buf) =>
     col.data.foreach { date =>
       writeShort(date.toEpochDay().toShort, buf)
     }
   }
 
   val datetimeColumnDataEncoder: Encoder[DateTimeColumnData] = Encoder { (col, buf) =>
-    writeString("DateTime", buf)
-
     col.data.foreach { datetime =>
       buf.putInt(datetime.toEpochSecond(ZoneOffset.UTC).toInt)
     }
@@ -37,42 +33,34 @@ object ColumnDataEncoders {
   }
 
   val float32ColumnDataEncoder: Encoder[Float32ColumnData] = Encoder { (col, buf) =>
-    writeString("Float32", buf)
     col.data.foreach(writeFloat(_, buf))
   }
 
   val float64ColumnDataEncoder: Encoder[Float64ColumnData] = Encoder { (col, buf) =>
-    writeString("Float64", buf)
     col.data.foreach(writeDouble(_, buf))
   }
 
   val int8ColumnDataEncoder: Encoder[Int8ColumnData] = Encoder { (col, buf) =>
-    writeString("Int8", buf)
     col.data.foreach(buf.put)
   }
 
   val int16ColumnDataEncoder: Encoder[Int16ColumnData] = Encoder { (col, buf) =>
-    writeString("Int16", buf)
     col.data.foreach(writeShort(_, buf))
   }
 
   val int32ColumnDataEncoder: Encoder[Int32ColumnData] = Encoder { (col, buf) =>
-    writeString("Int32", buf)
     col.data.foreach(buf.putInt)
   }
 
   val int64ColumnDataEncoder: Encoder[Int64ColumnData] = Encoder { (col, buf) =>
-    writeString("Int64", buf)
     col.data.foreach(writeLong(_, buf))
   }
 
   val stringColumnDataEncoder: Encoder[StringColumnData] = Encoder { (col, buf) =>
-    writeString("String", buf)
     col.data.foreach(writeString(_, buf))
   }
 
   val uuidColumnDataEncoder: Encoder[UuidColumnData] = Encoder { (col, buf) =>
-    writeString("UUID", buf)
     col.data.foreach { uuid =>
       buf.putLong(uuid.getMostSignificantBits())
       buf.putLong(uuid.getLeastSignificantBits())
@@ -101,17 +89,40 @@ object ColumnDataEncoders {
 
   val columnDataEncoder: Encoder[ColumnData] = Encoder { (col, buf) =>
     col match {
-      case col: DateColumnData => dateColumnDataEncoder.write(col, buf)
-      case col: DateTimeColumnData => datetimeColumnDataEncoder.write(col, buf)
+      case col: DateColumnData =>
+        writeString("Date", buf)
+        dateArrayEncoder.write(col, buf)
+      case col: DateTimeColumnData =>
+        writeString("DateTime", buf)
+        datetimeColumnDataEncoder.write(col, buf)
       // case col: Enum8ColumnData => enum8ColumnDataEncoder.write(col, buf)
-      case col: Float32ColumnData => float32ColumnDataEncoder.write(col, buf)
-      case col: Float64ColumnData => float64ColumnDataEncoder.write(col, buf)
-      case col: Int8ColumnData => int8ColumnDataEncoder.write(col, buf)
-      case col: Int16ColumnData => int16ColumnDataEncoder.write(col, buf)
-      case col: Int32ColumnData => int32ColumnDataEncoder.write(col, buf)
-      case col: Int64ColumnData => int64ColumnDataEncoder.write(col, buf)
-      case col: StringColumnData => stringColumnDataEncoder.write(col, buf)
-      case col: UuidColumnData => uuidColumnDataEncoder.write(col, buf)
+      case col: FixedStringColumnData =>
+        writeString(s"FixedString(${col.strLength})", buf)
+        fixedStringColumnDataEncoder.write(col, buf)
+      case col: Float32ColumnData =>
+        writeString("Float32", buf)
+        float32ColumnDataEncoder.write(col, buf)
+      case col: Float64ColumnData =>
+        writeString("Float64", buf)
+        float64ColumnDataEncoder.write(col, buf)
+      case col: Int8ColumnData =>
+        writeString("Int8", buf)
+        int8ColumnDataEncoder.write(col, buf)
+      case col: Int16ColumnData =>
+        writeString("Int16", buf)
+        int16ColumnDataEncoder.write(col, buf)
+      case col: Int32ColumnData =>
+        writeString("Int32", buf)
+        int32ColumnDataEncoder.write(col, buf)
+      case col: Int64ColumnData =>
+        writeString("Int64", buf)
+        int64ColumnDataEncoder.write(col, buf)
+      case col: StringColumnData =>
+        writeString("String", buf)
+        stringColumnDataEncoder.write(col, buf)
+      case col: UuidColumnData =>
+        writeString("UUID", buf)
+        uuidColumnDataEncoder.write(col, buf)
     } 
   }
 }
