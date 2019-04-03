@@ -9,7 +9,7 @@ Milestone
 - java.io client frontend
 
 # 3
-- performance (jmh, benchmarking)
+- benchmarking vs VirtusAI
 - fix decoders for leb128 and blockinfo fields to return a NotEnough in case, bench for 50M read
 
 # 4
@@ -23,7 +23,7 @@ Milestone
 - settings
  
 # 8
-- support for column types (array, tuple)
+- support for column types (generalized array, generalized tuple)
 
 # 9
 - performance jmh

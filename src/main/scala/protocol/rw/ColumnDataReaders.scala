@@ -17,39 +17,39 @@ object ColumnDataReaders {
   //   case enumDef(key, value) => (value.toInt, key)
   // }: _*)
 
-  def columnDataReader(nbRows: Int, columnType: String): Reader[ColumnData] = Reader { buf =>
+  def columnDataReader(nbRows: Int, columnType: String): Reader[ColumnData] = {
     columnType match {
       // case array(elemType) => arrayColumnDataReader(nbRows, elemType).read(buf)
-      case "Date" => dateColumnDataReader(nbRows).read(buf)
-      case "DateTime" => datetimeColumnDataReader(nbRows).read(buf)
+      case "Date" => dateColumnDataReader(nbRows)
+      case "DateTime" => datetimeColumnDataReader(nbRows)
       // case enum8(enumStr) =>
       //   val enums: Map[Int, String] = enumsFromDef(enumStr)
-      //   enum8ColumnDataReader(enums, nbRows).read(buf)
+      //   enum8ColumnDataReader(enums, nbRows)
       // case enum16(enumStr) =>
       //   val enums: Map[Int, String] = enumsFromDef(enumStr)
-      //   enum16ColumnDataReader(enums, nbRows).read(buf)
-      // case fixedString(strLength) => fixedStringColumnDataReader(strLength.toInt, nbRows).read(buf)
-      case "Float32" => float32ColumnDataReader(nbRows).read(buf)
-      case "Float64" => float64ColumnDataReader(nbRows).read(buf)
-      case "Int8" => int8ColumnDataReader(nbRows).read(buf)
-      case "Int16" => int16ColumnDataReader(nbRows).read(buf)
-      case "Int32" => int32ColumnDataReader(nbRows).read(buf)
-      case "Int64" => int64ColumnDataReader(nbRows).read(buf)
-      // case nullable(nullableType) => nullableColumnDataReader(nbRows, columnDataReader(nbRows, nullableType)).read(buf)
-      // case "String" => stringColumnDataReader(nbRows).read(buf)
-      // case tuple(types) => tupleColumnDataReader(nbRows, types).read(buf)
-      // case "UInt8" => uint8ColumnDataReader(nbRows).read(buf)
-      // case "UInt16" => uint16ColumnDataReader(nbRows).read(buf)
-      // case "UInt32" => uint32ColumnDataReader(nbRows).read(buf)
-      // case "UInt64" => uint64ColumnDataReader(nbRows).read(buf)
-      // case "UUID" => uuidColumnDataReader(nbRows).read(buf)
+      //   enum16ColumnDataReader(enums, nbRows)
+      // case fixedString(strLength) => fixedStringColumnDataReader(strLength.toInt, nbRows)
+      case "Float32" => float32ColumnDataReader(nbRows)
+      case "Float64" => float64ColumnDataReader(nbRows)
+      case "Int8" => int8ColumnDataReader(nbRows)
+      case "Int16" => int16ColumnDataReader(nbRows)
+      case "Int32" => int32ColumnDataReader(nbRows)
+      case "Int64" => int64ColumnDataReader(nbRows)
+      // case nullable(nullableType) => nullableColumnDataReader(nbRows, columnDataReader(nbRows, nullableType))
+      case "String" => stringColumnDataReader(nbRows)
+      // case tuple(types) => tupleColumnDataReader(nbRows, types)
+      // case "UInt8" => uint8ColumnDataReader(nbRows)
+      // case "UInt16" => uint16ColumnDataReader(nbRows)
+      // case "UInt32" => uint32ColumnDataReader(nbRows)
+      // case "UInt64" => uint64ColumnDataReader(nbRows)
+      // case "UUID" => uuidColumnDataReader(nbRows)
 
       case other => throw new UnsupportedOperationException(s"Column type not supported ${other}")
     }
   }
 
   // def arrayColumnDataReader(nbRows: Int, elemType: String): Reader[ArrayColumnData] = Reader { buf =>
-  //   val arrays = arrayReader(nbRows, elemType).read(buf)
+  //   val arrays = arrayReader(nbRows, elemType)
 
   //   ArrayColumnData(arrays)
   // }
@@ -222,17 +222,23 @@ object ColumnDataReaders {
   //   NullableColumnData(nulls, reader.read(buf))
   // }
 
-  // def stringColumnDataReader(nbRows: Int): Reader[StringColumnData] = Reader { buf =>
-  //   val data: Array[String] = new Array[String](nbRows)
+  def stringColumnDataReader(nbRows: Int): Reader[StringColumnData] = Reader { buf =>
+    val data: Array[String] = new Array[String](nbRows)
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     data(i) = readString(buf)
-  //     i = i + 1
-  //   }
+    var hasEnough: Boolean = true
+    var i: Int = 0
 
-  //   StringColumnData(data)
-  // }
+    while(i < nbRows) {
+      DefaultReaders.stringReader.read(buf) match {
+        case Consumed(str) => data(i) = str
+        case NotEnough => hasEnough = false
+      }
+      i = i + 1
+    }
+
+    if(hasEnough) Consumed(StringColumnData(data))
+    else NotEnough
+  }
 
   // def tupleColumnDataReader(nbRows: Int, typesStr: String): Reader[TupleColumnData] = Reader { buf =>
   //   val reader = tupleReader(typesStr)
