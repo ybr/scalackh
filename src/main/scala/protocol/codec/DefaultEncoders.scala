@@ -1,10 +1,10 @@
-package scalackh.protocol.rw
+package scalackh.protocol.codec
 
 import java.nio.ByteBuffer
 
-import scalackh.protocol.rw.LEB128.writeVarInt
+import scalackh.protocol.codec.LEB128.writeVarInt
 
-object DefaultWriters {
+object DefaultEncoders {
   def writeBool(z: Boolean, buf: ByteBuffer): Unit = {
     val byte: Byte = if(z) 1 else 0
     buf.put(byte)

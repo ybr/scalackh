@@ -1,4 +1,4 @@
-package scalackh.protocol.rw
+package scalackh.protocol.codec
 
 object PacketTypes {
   object Client {

@@ -1,19 +1,19 @@
-package scalackh.protocol.rw
+package scalackh.protocol.codec
 
 import java.nio.ByteBuffer
 
-trait Reader[+A] { self =>
+trait Decoder[+A] { self =>
   // be carefull to reset byte buffer position to its initial value when returning not enough
   def read(b: ByteBuffer): DecoderResult[A]
 
-  def flatMap[B](f: A => Reader[B]): Reader[B] = Reader { buf =>
+  def flatMap[B](f: A => Decoder[B]): Decoder[B] = Decoder { buf =>
     self.read(buf) match {
       case Consumed(a) => f(a).read(buf)
       case NotEnough => NotEnough
     }
   }
 
-  def map[B](f: A => B): Reader[B] = Reader { buf =>
+  def map[B](f: A => B): Decoder[B] = Decoder { buf =>
     self.read(buf) match {
       case Consumed(a) => Consumed(f(a))
       case NotEnough => NotEnough
@@ -21,8 +21,8 @@ trait Reader[+A] { self =>
   }
 }
 
-object Reader {
-  def apply[T](f: ByteBuffer => DecoderResult[T]): Reader[T] = new Reader[T] {
+object Decoder {
+  def apply[T](f: ByteBuffer => DecoderResult[T]): Decoder[T] = new Decoder[T] {
     def read(buf: ByteBuffer): DecoderResult[T] = {
       val position = buf.position
       f(buf) match {
@@ -34,12 +34,12 @@ object Reader {
     }
   }
 
-  def pure[T](value: T): Reader[T] = new Reader[T] {
+  def pure[T](value: T): Decoder[T] = new Decoder[T] {
     def read(buf: ByteBuffer): DecoderResult[T] = Consumed(value)
   }
 
   // turn it tailrec
-  def traverse[T](rs: List[Reader[T]]): Reader[List[T]] = new Reader[List[T]] {
+  def traverse[T](rs: List[Decoder[T]]): Decoder[List[T]] = new Decoder[List[T]] {
     def read(buf: ByteBuffer): DecoderResult[List[T]] = {
       rs match {
         case head :: tail =>

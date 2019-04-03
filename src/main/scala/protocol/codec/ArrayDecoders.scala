@@ -1,33 +1,33 @@
-// package scalackh.protocol.rw
+// package scalackh.protocol.codec
 
 // import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 
 // import ckh.native._
-// import DefaultReaders._
+// import DefaultDecoders._
 
-// object ArrayReaders {
-//   def arrayReader(nbRows: Int, elemType: String): Reader[ClickhouseArray] = Reader { buf =>
-//     val sizes = arraySizesReader(nbRows).read(buf)
+// object ArrayDecoders {
+//   def arrayDecoder(nbRows: Int, elemType: String): Decoder[ClickhouseArray] = Decoder { buf =>
+//     val sizes = arraySizesDecoder(nbRows).read(buf)
 
 //     elemType match {
-//       case "Date" => arrayDateReader(nbRows, sizes).read(buf)
-//       case "DateTime" => arrayDateTimeReader(nbRows, sizes).read(buf)
-//       case "Float32" => arrayFloat32Reader(nbRows, sizes).read(buf)
-//       case "Float64" => arrayFloat64Reader(nbRows, sizes).read(buf)
-//       case "Int8" => arrayInt8Reader(nbRows, sizes).read(buf)
-//       case "Int16" => arrayInt16Reader(nbRows, sizes).read(buf)
-//       case "Int32" => arrayInt32Reader(nbRows, sizes).read(buf)
-//       case "Int64" => arrayInt64Reader(nbRows, sizes).read(buf)
-//       case "String" => arrayStringReader(nbRows, sizes).read(buf)
-//       // case "UInt8" => arrayUInt8Reader(nbRows, sizes).read(buf)
-//       // case "Int16" => arrayUInt16Reader(nbRows, sizes).read(buf)
-//       // case "Int32" => arrayUInt32Reader(nbRows, sizes).read(buf)
-//       // case "Int64" => arrayUInt64Reader(nbRows, sizes).read(buf)
+//       case "Date" => arrayDateDecoder(nbRows, sizes).read(buf)
+//       case "DateTime" => arrayDateTimeDecoder(nbRows, sizes).read(buf)
+//       case "Float32" => arrayFloat32Decoder(nbRows, sizes).read(buf)
+//       case "Float64" => arrayFloat64Decoder(nbRows, sizes).read(buf)
+//       case "Int8" => arrayInt8Decoder(nbRows, sizes).read(buf)
+//       case "Int16" => arrayInt16Decoder(nbRows, sizes).read(buf)
+//       case "Int32" => arrayInt32Decoder(nbRows, sizes).read(buf)
+//       case "Int64" => arrayInt64Decoder(nbRows, sizes).read(buf)
+//       case "String" => arrayStringDecoder(nbRows, sizes).read(buf)
+//       // case "UInt8" => arrayUInt8Decoder(nbRows, sizes).read(buf)
+//       // case "Int16" => arrayUInt16Decoder(nbRows, sizes).read(buf)
+//       // case "Int32" => arrayUInt32Decoder(nbRows, sizes).read(buf)
+//       // case "Int64" => arrayUInt64Decoder(nbRows, sizes).read(buf)
 //     }
 //   }
 
 //   // manages only 1-d arrays
-//   def arraySizesReader(nbRows: Int): Reader[Array[Int]] = Reader { buf =>
+//   def arraySizesDecoder(nbRows: Int): Decoder[Array[Int]] = Decoder { buf =>
 //     // From https://github.com/mymarilyn/clickhouse-driver/blob/master/clickhouse_driver/columns/arraycolumn.py
 //     // Nested arrays written in flatten form after information about their
 //     // sizes (offsets really).
@@ -59,7 +59,7 @@
 //     sizes
 //   }
 
-//   def arrayDateReader(nbRows: Int, sizes: Array[Int]): Reader[DateArray] = Reader { buf =>
+//   def arrayDateDecoder(nbRows: Int, sizes: Array[Int]): Decoder[DateArray] = Decoder { buf =>
 //     val data: Array[Array[LocalDate]] = new Array[Array[LocalDate]](nbRows)
 
 //     var i: Int = 0
@@ -80,7 +80,7 @@
 //     DateArray(data)
 //   }
 
-//   def arrayDateTimeReader(nbRows: Int, sizes: Array[Int]): Reader[DateTimeArray] = Reader { buf =>
+//   def arrayDateTimeDecoder(nbRows: Int, sizes: Array[Int]): Decoder[DateTimeArray] = Decoder { buf =>
 //     val data: Array[Array[LocalDateTime]] = new Array[Array[LocalDateTime]](nbRows)
 
 //     var i: Int = 0
@@ -101,7 +101,7 @@
 //     DateTimeArray(data)
 //   }
 
-//   def arrayFloat64Reader(nbRows: Int, sizes: Array[Int]): Reader[Float64Array] = Reader { buf =>
+//   def arrayFloat64Decoder(nbRows: Int, sizes: Array[Int]): Decoder[Float64Array] = Decoder { buf =>
 //     val data: Array[Array[Double]] = new Array[Array[Double]](nbRows)
 
 //     var i: Int = 0
@@ -122,7 +122,7 @@
 //     Float64Array(data)
 //   }
 
-//   def arrayFloat32Reader(nbRows: Int, sizes: Array[Int]): Reader[Float32Array] = Reader { buf =>
+//   def arrayFloat32Decoder(nbRows: Int, sizes: Array[Int]): Decoder[Float32Array] = Decoder { buf =>
 //     val data: Array[Array[Float]] = new Array[Array[Float]](nbRows)
 
 //     var i: Int = 0
@@ -143,7 +143,7 @@
 //     Float32Array(data)
 //   }
 
-//   def arrayInt8Reader(nbRows: Int, sizes: Array[Int]): Reader[Int8Array] = Reader { buf =>
+//   def arrayInt8Decoder(nbRows: Int, sizes: Array[Int]): Decoder[Int8Array] = Decoder { buf =>
 //     val data: Array[Array[Byte]] = new Array[Array[Byte]](nbRows)
 
 //     var i: Int = 0
@@ -164,7 +164,7 @@
 //     Int8Array(data)
 //   }
 
-//   def arrayInt16Reader(nbRows: Int, sizes: Array[Int]): Reader[Int16Array] = Reader { buf =>
+//   def arrayInt16Decoder(nbRows: Int, sizes: Array[Int]): Decoder[Int16Array] = Decoder { buf =>
 //     val data: Array[Array[Short]] = new Array[Array[Short]](nbRows)
 
 //     var i: Int = 0
@@ -185,7 +185,7 @@
 //     Int16Array(data)
 //   }
 
-//   def arrayInt32Reader(nbRows: Int, sizes: Array[Int]): Reader[Int32Array] = Reader { buf =>
+//   def arrayInt32Decoder(nbRows: Int, sizes: Array[Int]): Decoder[Int32Array] = Decoder { buf =>
 //     val data: Array[Array[Int]] = new Array[Array[Int]](nbRows)
 
 //     var i: Int = 0
@@ -206,7 +206,7 @@
 //     Int32Array(data)
 //   }
 
-//   def arrayInt64Reader(nbRows: Int, sizes: Array[Int]): Reader[Int64Array] = Reader { buf =>
+//   def arrayInt64Decoder(nbRows: Int, sizes: Array[Int]): Decoder[Int64Array] = Decoder { buf =>
 //     val data: Array[Array[Long]] = new Array[Array[Long]](nbRows)
 
 //     var i: Int = 0
@@ -227,7 +227,7 @@
 //     Int64Array(data)
 //   }
 
-//   def arrayStringReader(nbRows: Int, sizes: Array[Int]): Reader[StringArray] = Reader { buf =>
+//   def arrayStringDecoder(nbRows: Int, sizes: Array[Int]): Decoder[StringArray] = Decoder { buf =>
 //     val data: Array[Array[String]] = new Array[Array[String]](nbRows)
 
 //     var i: Int = 0

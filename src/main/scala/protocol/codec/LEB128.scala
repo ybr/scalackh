@@ -1,11 +1,11 @@
-package scalackh.protocol.rw
+package scalackh.protocol.codec
 
 import java.nio.ByteBuffer
 
 // Encode integer of variable length using LEB128
 // https://en.wikipedia.org/wiki/LEB128
 object LEB128 {
-  val varIntReader: Reader[Int] = Reader { buf =>
+  val varIntDecoder: Decoder[Int] = Decoder { buf =>
     var hasEnough: Boolean = true
     var result: Int = 0
     var byte: Int = 0

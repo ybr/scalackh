@@ -1,18 +1,18 @@
 package scalackh.protocol.steps
 
 import scalackh.protocol._
-import scalackh.protocol.rw._
+import scalackh.protocol.codec._
 
 object ProtocolSteps {
   val MAX_ROWS_IN_BLOCK = 10000
 
   def  sendHello(info: ClientInfo): ProtocolStep = Cont.o { buf =>
-    ClientPacketWriters.message.write(info, buf)
+    ClientPacketEncoders.message.write(info, buf)
     receiveHello
   }
 
   val receiveHello: ProtocolStep = NeedsInput.i { buf =>
-    val decodedPacket: DecoderResult[ServerPacket] = ServerPacketReaders.protocol.read(buf)
+    val decodedPacket: DecoderResult[ServerPacket] = ServerPacketDecoders.protocol.read(buf)
 
     decodedPacket match {
       case Consumed(packet) => packet match {
@@ -24,7 +24,7 @@ object ProtocolSteps {
   }
 
   val receiveResult: ProtocolStep = Cont.i { buf =>
-    val decodedPacket: DecoderResult[ServerPacket] = ServerPacketReaders.protocol.read(buf)
+    val decodedPacket: DecoderResult[ServerPacket] = ServerPacketDecoders.protocol.read(buf)
     decodedPacket match {
       case NotEnough => NeedsInput(receiveResult)
       case Consumed(packet) => packet match {
@@ -43,11 +43,11 @@ object ProtocolSteps {
   }
 
   def execute(q: String, externalTables: Iterator[Block], values: Iterator[Block]): ProtocolStep = Cont.o { buf =>
-    ClientPacketWriters.message.write(Query(None, Complete, None, q), buf)
+    ClientPacketEncoders.message.write(Query(None, Complete, None, q), buf)
     externalTables.foreach { extBlock =>
-      ClientPacketWriters.message.write(ClientDataBlock(extBlock), buf)
+      ClientPacketEncoders.message.write(ClientDataBlock(extBlock), buf)
     }
-    ClientPacketWriters.message.write(ClientDataBlock(Block.empty), buf) // external tables
+    ClientPacketEncoders.message.write(ClientDataBlock(Block.empty), buf) // external tables
     val nextWithSample = {
       if(values.isEmpty) (_: Block) => receiveResult
       else (sample: Block) => sendData(sample, values)(receiveResult)
@@ -56,7 +56,7 @@ object ProtocolSteps {
   }
 
   def receiveSample(nextWithSample: Block => ProtocolStep): ProtocolStep = NeedsInput.i { buf =>
-    val decoderPacket: DecoderResult[ServerPacket] = ServerPacketReaders.protocol.read(buf)
+    val decoderPacket: DecoderResult[ServerPacket] = ServerPacketDecoders.protocol.read(buf)
     decoderPacket match {
       case NotEnough => receiveSample(nextWithSample)
       case Consumed(packet) => packet match {
@@ -79,19 +79,19 @@ object ProtocolSteps {
       sendBlock(blockWithNames)(sendData(sample, values)(afterSend))
     }
     else {
-      ClientPacketWriters.message.write(ClientDataBlock(Block.empty), buf) // end of data
+      ClientPacketEncoders.message.write(ClientDataBlock(Block.empty), buf) // end of data
       afterSend
     }
   }
 
   def sendBlock(block: Block)(next: => ProtocolStep): ProtocolStep = Cont.o { buf =>
     if(block.nbRows <= MAX_ROWS_IN_BLOCK) {
-      ClientPacketWriters.message.write(ClientDataBlock(block), buf)
+      ClientPacketEncoders.message.write(ClientDataBlock(block), buf)
       next
     }
     else { // block too big, split it
       val (maxSizeBlock, remainingBlock) = splitBlock(MAX_ROWS_IN_BLOCK)(block)
-      ClientPacketWriters.message.write(ClientDataBlock(maxSizeBlock), buf)
+      ClientPacketEncoders.message.write(ClientDataBlock(maxSizeBlock), buf)
       sendBlock(remainingBlock)(next)
     }
   }

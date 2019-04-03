@@ -1,10 +1,10 @@
-package scalackh.protocol.rw
+package scalackh.protocol.codec
 
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 
 import scalackh.protocol._
 
-object ColumnDataReaders {
+object ColumnDataDecoders {
   // val nullable = "Nullable\\((.+)\\)".r
   // val fixedString = "FixedString\\(([0-9]+)\\)".r
   // val enum8 = "Enum8\\((.+)\\)".r
@@ -17,44 +17,44 @@ object ColumnDataReaders {
   //   case enumDef(key, value) => (value.toInt, key)
   // }: _*)
 
-  def columnDataReader(nbRows: Int, columnType: String): Reader[ColumnData] = {
+  def columnDataDecoder(nbRows: Int, columnType: String): Decoder[ColumnData] = {
     columnType match {
-      // case array(elemType) => arrayColumnDataReader(nbRows, elemType).read(buf)
-      case "Date" => dateColumnDataReader(nbRows)
-      case "DateTime" => datetimeColumnDataReader(nbRows)
+      // case array(elemType) => arrayColumnDataDecoder(nbRows, elemType).read(buf)
+      case "Date" => dateColumnDataDecoder(nbRows)
+      case "DateTime" => datetimeColumnDataDecoder(nbRows)
       // case enum8(enumStr) =>
       //   val enums: Map[Int, String] = enumsFromDef(enumStr)
-      //   enum8ColumnDataReader(enums, nbRows)
+      //   enum8ColumnDataDecoder(enums, nbRows)
       // case enum16(enumStr) =>
       //   val enums: Map[Int, String] = enumsFromDef(enumStr)
-      //   enum16ColumnDataReader(enums, nbRows)
-      // case fixedString(strLength) => fixedStringColumnDataReader(strLength.toInt, nbRows)
-      case "Float32" => float32ColumnDataReader(nbRows)
-      case "Float64" => float64ColumnDataReader(nbRows)
-      case "Int8" => int8ColumnDataReader(nbRows)
-      case "Int16" => int16ColumnDataReader(nbRows)
-      case "Int32" => int32ColumnDataReader(nbRows)
-      case "Int64" => int64ColumnDataReader(nbRows)
-      // case nullable(nullableType) => nullableColumnDataReader(nbRows, columnDataReader(nbRows, nullableType))
-      case "String" => stringColumnDataReader(nbRows)
-      // case tuple(types) => tupleColumnDataReader(nbRows, types)
-      // case "UInt8" => uint8ColumnDataReader(nbRows)
-      // case "UInt16" => uint16ColumnDataReader(nbRows)
-      // case "UInt32" => uint32ColumnDataReader(nbRows)
-      // case "UInt64" => uint64ColumnDataReader(nbRows)
-      // case "UUID" => uuidColumnDataReader(nbRows)
+      //   enum16ColumnDataDecoder(enums, nbRows)
+      // case fixedString(strLength) => fixedStringColumnDataDecoder(strLength.toInt, nbRows)
+      case "Float32" => float32ColumnDataDecoder(nbRows)
+      case "Float64" => float64ColumnDataDecoder(nbRows)
+      case "Int8" => int8ColumnDataDecoder(nbRows)
+      case "Int16" => int16ColumnDataDecoder(nbRows)
+      case "Int32" => int32ColumnDataDecoder(nbRows)
+      case "Int64" => int64ColumnDataDecoder(nbRows)
+      // case nullable(nullableType) => nullableColumnDataDecoder(nbRows, columnDataDecoder(nbRows, nullableType))
+      case "String" => stringColumnDataDecoder(nbRows)
+      // case tuple(types) => tupleColumnDataDecoder(nbRows, types)
+      // case "UInt8" => uint8ColumnDataDecoder(nbRows)
+      // case "UInt16" => uint16ColumnDataDecoder(nbRows)
+      // case "UInt32" => uint32ColumnDataDecoder(nbRows)
+      // case "UInt64" => uint64ColumnDataDecoder(nbRows)
+      // case "UUID" => uuidColumnDataDecoder(nbRows)
 
       case other => throw new UnsupportedOperationException(s"Column type not supported ${other}")
     }
   }
 
-  // def arrayColumnDataReader(nbRows: Int, elemType: String): Reader[ArrayColumnData] = Reader { buf =>
-  //   val arrays = arrayReader(nbRows, elemType)
+  // def arrayColumnDataDecoder(nbRows: Int, elemType: String): Decoder[ArrayColumnData] = Decoder { buf =>
+  //   val arrays = arrayDecoder(nbRows, elemType)
 
   //   ArrayColumnData(arrays)
   // }
 
-  def dateColumnDataReader(nbRows: Int): Reader[DateColumnData] = Reader { buf =>
+  def dateColumnDataDecoder(nbRows: Int): Decoder[DateColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 2) NotEnough
     else {
       val data: Array[LocalDate] = new Array[LocalDate](nbRows)
@@ -69,7 +69,7 @@ object ColumnDataReaders {
     }
   }
 
-  def datetimeColumnDataReader(nbRows: Int): Reader[DateTimeColumnData] = Reader { buf =>
+  def datetimeColumnDataDecoder(nbRows: Int): Decoder[DateTimeColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 4) NotEnough
     else {
       val data: Array[LocalDateTime] = new Array[LocalDateTime](nbRows)
@@ -84,7 +84,7 @@ object ColumnDataReaders {
     }
   }
 
-  // def enum8ColumnDataReader(enums: Map[Int, String], nbRows: Int): Reader[EnumColumnData] = Reader { buf =>
+  // def enum8ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[EnumColumnData] = Decoder { buf =>
   //   val data: Array[Int] = new Array[Int](nbRows)
 
   //   var i: Int = 0
@@ -96,7 +96,7 @@ object ColumnDataReaders {
   //   Enum8ColumnData(enums, data)
   // }
 
-  // def enum16ColumnDataReader(enums: Map[Int, String], nbRows: Int): Reader[EnumColumnData] = Reader { buf =>
+  // def enum16ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[EnumColumnData] = Decoder { buf =>
   //   val data: Array[Int] = new Array[Int](nbRows)
 
   //   var i: Int = 0
@@ -108,7 +108,7 @@ object ColumnDataReaders {
   //   Enum16ColumnData(enums, data)
   // }
 
-  // def fixedStringColumnDataReader(strLength: Int, nbRows: Int): Reader[FixedStringColumnData] = Reader { buf =>
+  // def fixedStringColumnDataDecoder(strLength: Int, nbRows: Int): Decoder[FixedStringColumnData] = Decoder { buf =>
   //   val data: Array[String] = new Array[String](nbRows)
 
   //   var i: Int = 0
@@ -120,7 +120,7 @@ object ColumnDataReaders {
   //   FixedStringColumnData(strLength, data)
   // }
 
-  def float32ColumnDataReader(nbRows: Int): Reader[Float32ColumnData] = Reader { buf =>
+  def float32ColumnDataDecoder(nbRows: Int): Decoder[Float32ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 4) NotEnough
     else {
       val data: Array[Float] = new Array[Float](nbRows)
@@ -135,7 +135,7 @@ object ColumnDataReaders {
     }
   }
 
-  def float64ColumnDataReader(nbRows: Int): Reader[Float64ColumnData] = Reader { buf =>
+  def float64ColumnDataDecoder(nbRows: Int): Decoder[Float64ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 8) NotEnough
     else {
       val data: Array[Double] = new Array[Double](nbRows)
@@ -150,7 +150,7 @@ object ColumnDataReaders {
     }
   }
 
-  def int8ColumnDataReader(nbRows: Int): Reader[Int8ColumnData] = Reader { buf =>
+  def int8ColumnDataDecoder(nbRows: Int): Decoder[Int8ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows) NotEnough
     else {
       val data: Array[Byte] = new Array[Byte](nbRows)
@@ -165,7 +165,7 @@ object ColumnDataReaders {
     }
   }
 
-  def int16ColumnDataReader(nbRows: Int): Reader[Int16ColumnData] = Reader { buf =>
+  def int16ColumnDataDecoder(nbRows: Int): Decoder[Int16ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 2) NotEnough
     else {
       val data: Array[Short] = new Array[Short](nbRows)
@@ -180,7 +180,7 @@ object ColumnDataReaders {
     }
   }
 
-  def int32ColumnDataReader(nbRows: Int): Reader[Int32ColumnData] = Reader { buf =>
+  def int32ColumnDataDecoder(nbRows: Int): Decoder[Int32ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 4) NotEnough
     else {
       val data: Array[Int] = new Array[Int](nbRows)
@@ -195,7 +195,7 @@ object ColumnDataReaders {
     }
   }
 
-  def int64ColumnDataReader(nbRows: Int): Reader[Int64ColumnData] = Reader { buf =>
+  def int64ColumnDataDecoder(nbRows: Int): Decoder[Int64ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 8) NotEnough
     else {
       val data: Array[Long] = new Array[Long](nbRows)
@@ -210,7 +210,7 @@ object ColumnDataReaders {
     }
   }
 
-  // def nullableColumnDataReader(nbRows: Int, reader: Reader[ColumnData]): Reader[NullableColumnData] = Reader { buf =>
+  // def nullableColumnDataDecoder(nbRows: Int, Decoder: Decoder[ColumnData]): Decoder[NullableColumnData] = Decoder { buf =>
   //   val nulls: Array[Boolean] = new Array[Boolean](nbRows)
 
   //   var i: Int = 0
@@ -219,17 +219,17 @@ object ColumnDataReaders {
   //     i = i + 1
   //   }
 
-  //   NullableColumnData(nulls, reader.read(buf))
+  //   NullableColumnData(nulls, Decoder.read(buf))
   // }
 
-  def stringColumnDataReader(nbRows: Int): Reader[StringColumnData] = Reader { buf =>
+  def stringColumnDataDecoder(nbRows: Int): Decoder[StringColumnData] = Decoder { buf =>
     val data: Array[String] = new Array[String](nbRows)
 
     var hasEnough: Boolean = true
     var i: Int = 0
 
     while(i < nbRows) {
-      DefaultReaders.stringReader.read(buf) match {
+      DefaultDecoders.stringDecoder.read(buf) match {
         case Consumed(str) => data(i) = str
         case NotEnough => hasEnough = false
       }
@@ -240,21 +240,21 @@ object ColumnDataReaders {
     else NotEnough
   }
 
-  // def tupleColumnDataReader(nbRows: Int, typesStr: String): Reader[TupleColumnData] = Reader { buf =>
-  //   val reader = tupleReader(typesStr)
+  // def tupleColumnDataDecoder(nbRows: Int, typesStr: String): Decoder[TupleColumnData] = Decoder { buf =>
+  //   val Decoder = tupleDecoder(typesStr)
 
   //   val data: Array[TupleData] = new Array[TupleData](nbRows)
 
   //   var i: Int = 0
   //   while(i < nbRows) {
-  //     data(i) = reader.read(buf)
+  //     data(i) = Decoder.read(buf)
   //     i = i + 1
   //   }
 
   //   TupleColumnData(data)
   // }
 
-  // def uint8ColumnDataReader(nbRows: Int): Reader[UInt8ColumnData] = Reader { buf =>
+  // def uint8ColumnDataDecoder(nbRows: Int): Decoder[UInt8ColumnData] = Decoder { buf =>
   //   val data: Array[Short] = new Array[Short](nbRows)
 
   //   var i: Int = 0
@@ -266,7 +266,7 @@ object ColumnDataReaders {
   //   UInt8ColumnData(data)
   // }
 
-  // def uint16ColumnDataReader(nbRows: Int): Reader[UInt16ColumnData] = Reader { buf =>
+  // def uint16ColumnDataDecoder(nbRows: Int): Decoder[UInt16ColumnData] = Decoder { buf =>
   //   val data: Array[Int] = new Array[Int](nbRows)
 
   //   var i: Int = 0
@@ -278,7 +278,7 @@ object ColumnDataReaders {
   //   UInt16ColumnData(data)
   // }
 
-  // def uint32ColumnDataReader(nbRows: Int): Reader[UInt32ColumnData] = Reader { buf =>
+  // def uint32ColumnDataDecoder(nbRows: Int): Decoder[UInt32ColumnData] = Decoder { buf =>
   //   val data: Array[Long] = new Array[Long](nbRows)
 
   //   val bytes: Array[Byte] = new Array(4)
@@ -299,7 +299,7 @@ object ColumnDataReaders {
   //   UInt32ColumnData(data)
   // }
 
-  // def uint64ColumnDataReader(nbRows: Int): Reader[UInt64ColumnData] = Reader { buf =>
+  // def uint64ColumnDataDecoder(nbRows: Int): Decoder[UInt64ColumnData] = Decoder { buf =>
   //   val data: Array[BigInteger] = new Array[BigInteger](nbRows)
 
   //   val bytes: Array[Byte] = new Array(8)
@@ -323,7 +323,7 @@ object ColumnDataReaders {
   //   UInt64ColumnData(data)
   // }
 
-  // def uuidColumnDataReader(nbRows: Int): Reader[UuidColumnData] = Reader { buf =>
+  // def uuidColumnDataDecoder(nbRows: Int): Decoder[UuidColumnData] = Decoder { buf =>
   //   val data: Array[UUID] = new Array[UUID](nbRows)
 
   //   var i: Int = 0

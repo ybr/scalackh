@@ -1,13 +1,13 @@
-package scalackh.protocol.rw
+package scalackh.protocol.codec
 
 import java.nio.ByteBuffer
 import java.time.ZoneOffset
 
 import scalackh.protocol._
-import scalackh.protocol.rw.DefaultWriters._
+import scalackh.protocol.codec.DefaultEncoders._
 
-object ColumnDataWriters {
-  val dateColumnDataWriter: Writer[DateColumnData] = Writer { (col, buf) =>
+object ColumnDataEncoders {
+  val dateColumnDataEncoder: Encoder[DateColumnData] = Encoder { (col, buf) =>
     writeString("Date", buf)
 
     col.data.foreach { date =>
@@ -15,7 +15,7 @@ object ColumnDataWriters {
     }
   }
 
-  val datetimeColumnDataWriter: Writer[DateTimeColumnData] = Writer { (col, buf) =>
+  val datetimeColumnDataEncoder: Encoder[DateTimeColumnData] = Encoder { (col, buf) =>
     writeString("DateTime", buf)
 
     col.data.foreach { datetime =>
@@ -23,7 +23,7 @@ object ColumnDataWriters {
     }
   }
 
-  // val enum8ColumnDataWriter: Writer[Enum8ColumnData] = Writer { (col, buf) =>
+  // val enum8ColumnDataEncoder: Encoder[Enum8ColumnData] = Encoder { (col, buf) =>
   //   val enumDefs: String = col.enums.toList.sortBy(_._1).map(t => t._1 + " = " + t._2).mkString(",")
   //   writeString(s"Enum8($enumDefs)", buf)
   //   col.data.foreach { e =>
@@ -32,37 +32,37 @@ object ColumnDataWriters {
   //   }
   // }
 
-  val float32ColumnDataWriter: Writer[Float32ColumnData] = Writer { (col, buf) =>
+  val float32ColumnDataEncoder: Encoder[Float32ColumnData] = Encoder { (col, buf) =>
     writeString("Float32", buf)
     col.data.foreach(writeFloat(_, buf))
   }
 
-  val float64ColumnDataWriter: Writer[Float64ColumnData] = Writer { (col, buf) =>
+  val float64ColumnDataEncoder: Encoder[Float64ColumnData] = Encoder { (col, buf) =>
     writeString("Float64", buf)
     col.data.foreach(writeDouble(_, buf))
   }
 
-  val int8ColumnDataWriter: Writer[Int8ColumnData] = Writer { (col, buf) =>
+  val int8ColumnDataEncoder: Encoder[Int8ColumnData] = Encoder { (col, buf) =>
     writeString("Int8", buf)
     col.data.foreach(buf.put)
   }
 
-  val int16ColumnDataWriter: Writer[Int16ColumnData] = Writer { (col, buf) =>
+  val int16ColumnDataEncoder: Encoder[Int16ColumnData] = Encoder { (col, buf) =>
     writeString("Int16", buf)
     col.data.foreach(writeShort(_, buf))
   }
 
-  val int32ColumnDataWriter: Writer[Int32ColumnData] = Writer { (col, buf) =>
+  val int32ColumnDataEncoder: Encoder[Int32ColumnData] = Encoder { (col, buf) =>
     writeString("Int32", buf)
     col.data.foreach(writeInt(_, buf))
   }
 
-  val int64ColumnDataWriter: Writer[Int64ColumnData] = Writer { (col, buf) =>
+  val int64ColumnDataEncoder: Encoder[Int64ColumnData] = Encoder { (col, buf) =>
     writeString("Int64", buf)
     col.data.foreach(writeLong(_, buf))
   }
 
-  val stringColumnDataWriter: Writer[StringColumnData] = Writer { (col, buf) =>
+  val stringColumnDataEncoder: Encoder[StringColumnData] = Encoder { (col, buf) =>
     writeString("String", buf)
     col.data.foreach(writeString(_, buf))
   }
