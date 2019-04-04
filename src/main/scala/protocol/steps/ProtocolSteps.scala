@@ -90,58 +90,9 @@ object ProtocolSteps {
       next
     }
     else { // block too big, split it
-      val (maxSizeBlock, remainingBlock) = splitBlock(MAX_ROWS_IN_BLOCK)(block)
+      val (maxSizeBlock, remainingBlock) = Split.splitBlock(MAX_ROWS_IN_BLOCK)(block)
       ClientPacketEncoders.message.write(ClientDataBlock(maxSizeBlock), buf)
       sendBlock(remainingBlock)(next)
     }
-  }
-
-  // returns first block with nbRows less than or equals to maxSize, second block the remaining
-  def splitBlock(maxSize: Int)(block: Block): (Block, Block) = {
-    val (maxSizeColumns, remainingColumns) = block.columns.map { col =>
-      val dataCols: (ColumnData, ColumnData) = col.data match {
-        case DateColumnData(data) =>  
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          DateColumnData(dataMaxSize) -> DateColumnData(dataRemaining)
-        case DateTimeColumnData(data) =>  
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          DateTimeColumnData(dataMaxSize) -> DateTimeColumnData(dataRemaining)
-        case FixedStringColumnData(strLength, data) =>  
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          FixedStringColumnData(strLength, dataMaxSize) -> FixedStringColumnData(strLength, dataRemaining)
-        case Float32ColumnData(data) => 
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          Float32ColumnData(dataMaxSize) -> Float32ColumnData(dataRemaining)
-        case Float64ColumnData(data) => 
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          Float64ColumnData(dataMaxSize) -> Float64ColumnData(dataRemaining)
-        case Int8ColumnData(data) =>  
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          Int8ColumnData(dataMaxSize) -> Int8ColumnData(dataRemaining)
-        case Int16ColumnData(data) => 
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          Int16ColumnData(dataMaxSize) -> Int16ColumnData(dataRemaining)
-        case Int32ColumnData(data) => 
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          Int32ColumnData(dataMaxSize) -> Int32ColumnData(dataRemaining)
-        case Int64ColumnData(data) => 
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          Int64ColumnData(dataMaxSize) -> Int64ColumnData(dataRemaining)
-        case StringColumnData(data) =>  
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          StringColumnData(dataMaxSize) -> StringColumnData(dataRemaining)
-        case UuidColumnData(data) =>  
-          val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
-          UuidColumnData(dataMaxSize) -> UuidColumnData(dataRemaining)
-      }
-      val (colDataMaxSize, colDataRemaining) = dataCols
-      Column(col.name, colDataMaxSize) -> Column(col.name, colDataRemaining)
-    }.unzip
-
-    val nbRowsNotMoved = Math.max(0, block.nbRows - maxSize)
-
-    val maxSizeBlock = block.copy(columns = maxSizeColumns, nbRows = block.nbRows - nbRowsNotMoved)
-    val remainingBlock = block.copy(columns = remainingColumns, nbRows = nbRowsNotMoved)
-    (maxSizeBlock, remainingBlock)
   }
 }
