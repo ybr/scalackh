@@ -55,8 +55,7 @@ object ServerPacketDecoders {
     columns <- Decoder.traverse((0 until nbColumns).map { _ =>
       for {
         columnName <- stringDecoder
-        columnType <- stringDecoder
-        columnData <- columnDataDecoder(nbRows, columnType)
+        columnData <- columnDataDecoder(nbRows)
       } yield Column(columnName, columnData)
     }.toList)
   } yield Block(maybeTableName, info, nbColumns, nbRows, columns)

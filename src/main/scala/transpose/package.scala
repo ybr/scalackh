@@ -1,3 +1,5 @@
 package scalackh
 
-package object transpose extends DefaultColumnTransposers with ShapelessColumnTransposers
+package object transpose extends DefaultColumnTransposers
+                            with ShapelessColumnTransposers
+                            with DefaultNullables

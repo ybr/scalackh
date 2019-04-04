@@ -8,7 +8,49 @@ import scala.util.{Failure, Success, Try}
 
 import scalackh.protocol._
 
+trait Nullable[A] {
+  def nullValue(): A
+}
+
+object Nullable {
+  def apply[A](a: A): Nullable[A] = new Nullable[A] {
+    val nullValue: A = a
+  }
+}
+
+trait DefaultNullables {
+  implicit val floatNullable: Nullable[Float] = Nullable(0.0f)
+  implicit val doubleNullable: Nullable[Double] = Nullable(0.0)
+  implicit val byteNullable: Nullable[Byte] = Nullable(0)
+  implicit val shotNullable: Nullable[Short] = Nullable(0)
+  implicit val intNullable: Nullable[Int] = Nullable(0)
+  implicit val longNullable: Nullable[Long] = Nullable(0)
+  implicit val stringNullable: Nullable[String] = Nullable("")
+  implicit val uuidNullable: Nullable[UUID] = Nullable(new UUID(0, 0))
+}
+
 trait DefaultColumnTransposers {
+  implicit def columnTransposerNullable[A](implicit ctA: ColumnTransposer[A], nullable: Nullable[A], ct: ClassTag[A]): ColumnTransposer[Option[A]] = {
+    val nullA: A = nullable.nullValue
+    ColumnTransposerInstances.columnTransposerBuilder[Option[A]](
+      maybeAs => {
+        val (nulls, as) = maybeAs.map {
+          case Some(a) => (false, a)
+          case None => (true, nullA)
+        }.unzip
+        NullableColumnData(nulls.toArray, ctA.toColumnsData(as.toList).head)
+      },
+      {
+        case NullableColumnData(nulls, data) =>
+          val as = ctA.fromColumnsData(List(data)).get
+          as.zipWithIndex.map { case (a, i) =>
+            val nullableA: Option[A] = if(nulls(i)) None else Some(a)
+            nullableA
+          }.toArray
+      }
+    )
+  }
+
   implicit val columnTransposerString: ColumnTransposer[String] = ColumnTransposerInstances.columnTransposerBuilder(
     StringColumnData(_),
     {

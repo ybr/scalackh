@@ -14,7 +14,13 @@ Milestone
 
 # 4
 - tests
-- support for column types (simple 1d-array, simple nullable, enum8/16, fixedstring, uint8/16/32/64, nested, uuid)
+- support for column types (
+    [ ] simple 1d-array,
+    [X] simple nullable,
+    [X] enum8/16,
+    [X] fixedstring,
+    [ ] uint8/16/32/64,
+    [X] uuid)
 
 # 5
 - reactive frontend (netty + monix)
@@ -23,7 +29,7 @@ Milestone
 - settings
  
 # 8
-- support for column types (generalized array, generalized tuple)
+- support for column types (generalized array, tuple)
 
 # 9
 - performance jmh

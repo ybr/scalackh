@@ -26,12 +26,12 @@ case class Int64ColumnData(data: Array[Long]) extends IntegerColumnData
 // case class UInt32ColumnData(data: Array[Long]) extends IntegerColumnData
 // case class UInt64ColumnData(data: Array[BigInteger]) extends IntegerColumnData
 
-// sealed trait EnumColumnData extends ColumnData
-// case class Enum8ColumnData(enums: Map[Int, String], data: Array[Int]) extends EnumColumnData
-// case class Enum16ColumnData(enums: Map[Int, String], data: Array[Int]) extends EnumColumnData
+sealed trait EnumColumnData extends ColumnData
+case class Enum8ColumnData(enums: Map[Int, String], data: Array[Byte]) extends EnumColumnData
+case class Enum16ColumnData(enums: Map[Int, String], data: Array[Short]) extends EnumColumnData
 
 // case class ArrayColumnData(data: ClickhouseArray) extends ColumnData
-// case class NullableColumnData(nulls: Array[Boolean], data: ColumnData) extends ColumnData
+case class NullableColumnData(nulls: Array[Boolean], data: ColumnData) extends ColumnData
 case class StringColumnData(data: Array[String]) extends ColumnData
 case class FixedStringColumnData(strLength: Int, data: Array[String]) extends ColumnData
 case class UuidColumnData(data: Array[UUID]) extends ColumnData

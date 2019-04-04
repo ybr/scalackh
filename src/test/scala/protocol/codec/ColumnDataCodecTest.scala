@@ -9,6 +9,8 @@ import java.util.UUID
 import org.scalacheck._
 import org.scalacheck.Prop.forAll
 
+import scala.collection.immutable.IntMap
+
 object ColumnDataCodecTest extends Properties("Codec ColumnData") {
   property("Date") = forAll(Gen.listOfN(10, Gen.chooseNum(Short.MinValue, Short.MaxValue).map(short => LocalDate.ofEpochDay(short.toLong)))) { (l1: List[LocalDate]) =>
     val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
@@ -28,6 +30,36 @@ object ColumnDataCodecTest extends Properties("Codec ColumnData") {
     val Consumed(DateTimeColumnData(l2)) = ColumnDataDecoders.dateTimeColumnDataDecoder(l1.length).read(buf)
 
     l1 == l2.toList
+  }
+
+  property("Enum8") = forAll(Gen.listOfN(10, Gen.chooseNum(0, 5).map(_.toByte))) { (l1: List[Byte]) =>
+    val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
+
+    val colData = Enum8ColumnData(
+      IntMap(1 -> "one", 2 -> "two", 3 -> "three", 4 -> "four", 5 -> "five"),
+      l1.toArray
+    )
+
+    ColumnDataEncoders.columnDataEncoder.write(colData, buf)
+    buf.position(0)
+    val Consumed(Enum8ColumnData(readEnums, l2)) = ColumnDataDecoders.columnDataDecoder(l1.length).read(buf)
+
+    l1 == l2.toList && colData.enums == readEnums
+  }
+
+  property("Enum16") = forAll(Gen.listOfN(10, Gen.chooseNum(0, 5).map(_.toShort))) { (l1: List[Short]) =>
+    val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
+
+    val colData = Enum16ColumnData(
+      IntMap(1 -> "one", 2 -> "two", 3 -> "three", 4 -> "four", 5 -> "five"),
+      l1.toArray
+    )
+
+    ColumnDataEncoders.columnDataEncoder.write(colData, buf)
+    buf.position(0)
+    val Consumed(Enum16ColumnData(readEnums, l2)) = ColumnDataDecoders.columnDataDecoder(l1.length).read(buf)
+
+    l1 == l2.toList && colData.enums == readEnums
   }
 
   property("String") = forAll(Gen.listOfN(10, Gen.asciiStr)) { (l1: List[String]) =>

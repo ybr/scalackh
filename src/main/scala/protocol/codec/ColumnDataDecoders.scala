@@ -3,32 +3,36 @@ package scalackh.protocol.codec
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
+import scala.collection.immutable.IntMap
+
 import scalackh.protocol._
+import scalackh.protocol.codec.DefaultDecoders.stringDecoder
 
 object ColumnDataDecoders {
-  // val nullable = "Nullable\\((.+)\\)".r
+  val nullable = "Nullable\\((.+)\\)".r
   val fixedString = "FixedString\\(([0-9]+)\\)".r
-  // val enum8 = "Enum8\\((.+)\\)".r
-  // val enum16 = "Enum16\\((.+)\\)".r
-  // val enumDef = "'(.+)' = ([0-9]+)".r
+  val enum8 = "Enum8\\((.+)\\)".r
+  val enum16 = "Enum16\\((.+)\\)".r
+  val enumDef = "'(.+)' = ([0-9]+)".r
   // val array = "Array\\((.+)\\)".r
   // val tuple = "Tuple\\((.+)\\)".r
 
-  // def enumsFromDef(enumStr: String): Map[Int, String] = IntMap[String](enumStr.split(',').toSeq.map(_.trim).map {
-  //   case enumDef(key, value) => (value.toInt, key)
-  // }: _*)
+  def columnDataDecoder(nbRows: Int): Decoder[ColumnData] = for {
+    columnType <- stringDecoder
+    columnData <- columnDataOnlyDecoder(nbRows, columnType)
+  } yield columnData
 
-  def columnDataDecoder(nbRows: Int, columnType: String): Decoder[ColumnData] = {
+  def columnDataOnlyDecoder(nbRows: Int, columnType: String): Decoder[ColumnData] = {
     columnType match {
       // case array(elemType) => arrayColumnDataDecoder(nbRows, elemType).read(buf)
       case "Date" => dateColumnDataDecoder(nbRows)
       case "DateTime" => dateTimeColumnDataDecoder(nbRows)
-      // case enum8(enumStr) =>
-      //   val enums: Map[Int, String] = enumsFromDef(enumStr)
-      //   enum8ColumnDataDecoder(enums, nbRows)
-      // case enum16(enumStr) =>
-      //   val enums: Map[Int, String] = enumsFromDef(enumStr)
-      //   enum16ColumnDataDecoder(enums, nbRows)
+      case enum8(enumStr) =>
+        val enums: Map[Int, String] = enumsFromDef(enumStr)
+        enum8ColumnDataDecoder(enums, nbRows)
+      case enum16(enumStr) =>
+        val enums: Map[Int, String] = enumsFromDef(enumStr)
+        enum16ColumnDataDecoder(enums, nbRows)
       case fixedString(strLength) => fixedStringColumnDataDecoder(strLength.toInt, nbRows)
       case "Float32" => float32ColumnDataDecoder(nbRows)
       case "Float64" => float64ColumnDataDecoder(nbRows)
@@ -36,7 +40,7 @@ object ColumnDataDecoders {
       case "Int16" => int16ColumnDataDecoder(nbRows)
       case "Int32" => int32ColumnDataDecoder(nbRows)
       case "Int64" => int64ColumnDataDecoder(nbRows)
-      // case nullable(nullableType) => nullableColumnDataDecoder(nbRows, columnDataDecoder(nbRows, nullableType))
+      case nullable(nullableType) => nullableColumnDataDecoder(nbRows, columnDataOnlyDecoder(nbRows, nullableType))
       case "String" => stringColumnDataDecoder(nbRows)
       // case tuple(types) => tupleColumnDataDecoder(nbRows, types)
       // case "UInt8" => uint8ColumnDataDecoder(nbRows)
@@ -48,6 +52,10 @@ object ColumnDataDecoders {
       case other => throw new UnsupportedOperationException(s"Column type not supported ${other}")
     }
   }
+
+  def enumsFromDef(enumStr: String): Map[Int, String] = IntMap[String](enumStr.split(',').toSeq.map(_.trim).map {
+    case enumDef(key, value) => (value.toInt, key)
+  }: _*)
 
   // def arrayColumnDataDecoder(nbRows: Int, elemType: String): Decoder[ArrayColumnData] = Decoder { buf =>
   //   val arrays = arrayDecoder(nbRows, elemType)
@@ -85,29 +93,35 @@ object ColumnDataDecoders {
     }
   }
 
-  // def enum8ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[EnumColumnData] = Decoder { buf =>
-  //   val data: Array[Int] = new Array[Int](nbRows)
+  def enum8ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[EnumColumnData] = Decoder { buf =>
+    if(buf.remaining < nbRows) NotEnough
+    else {
+      val data: Array[Byte] = new Array[Byte](nbRows)
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     data(i) = buf.get().toInt
-  //     i = i + 1
-  //   }
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = buf.get()
+        i = i + 1
+      }
 
-  //   Enum8ColumnData(enums, data)
-  // }
+      Consumed(Enum8ColumnData(enums, data))
+    }
+  }
 
-  // def enum16ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[EnumColumnData] = Decoder { buf =>
-  //   val data: Array[Int] = new Array[Int](nbRows)
+  def enum16ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[EnumColumnData] = Decoder { buf =>
+    if(buf.remaining < nbRows * 2) NotEnough
+    else {
+      val data: Array[Short] = new Array[Short](nbRows)
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     data(i) = readShort(buf).toInt
-  //     i = i + 1
-  //   }
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = buf.getShort()
+        i = i + 1
+      }
 
-  //   Enum16ColumnData(enums, data)
-  // }
+      Consumed(Enum16ColumnData(enums, data))
+    }
+  } 
 
   def fixedStringColumnDataDecoder(strLength: Int, nbRows: Int): Decoder[FixedStringColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * strLength) NotEnough
@@ -216,17 +230,25 @@ object ColumnDataDecoders {
     }
   }
 
-  // def nullableColumnDataDecoder(nbRows: Int, Decoder: Decoder[ColumnData]): Decoder[NullableColumnData] = Decoder { buf =>
-  //   val nulls: Array[Boolean] = new Array[Boolean](nbRows)
+  def nullableArrayDecoder(nbRows: Int): Decoder[Array[Boolean]] = Decoder { buf =>
+    if(buf.remaining < nbRows) NotEnough
+    else {
+      val nulls: Array[Boolean] = new Array[Boolean](nbRows)
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     nulls(i) = readBool(buf)
-  //     i = i + 1
-  //   }
+      var i: Int = 0
+      while(i < nbRows) {
+        nulls(i) = buf.get() != 0
+        i = i + 1
+      }
 
-  //   NullableColumnData(nulls, Decoder.read(buf))
-  // }
+      Consumed(nulls)
+    }
+  }
+
+  def nullableColumnDataDecoder(nbRows: Int, decoder: Decoder[ColumnData]): Decoder[NullableColumnData] = for {
+    nulls <- nullableArrayDecoder(nbRows)
+    data <- decoder
+  } yield NullableColumnData(nulls, data)
 
   def stringColumnDataDecoder(nbRows: Int): Decoder[StringColumnData] = Decoder { buf =>
     val data: Array[String] = new Array[String](nbRows)

@@ -1,15 +1,14 @@
 package scalackh.protocol.codec
 
-import java.nio.ByteBuffer
 import java.time.ZoneOffset
 
 import scalackh.protocol._
-import scalackh.protocol.codec.DefaultEncoders._
+import scalackh.protocol.codec.DefaultEncoders.writeString
 
 object ColumnDataEncoders {
   val dateColumnDataEncoder: Encoder[DateColumnData] = Encoder { (col, buf) =>
     col.data.foreach { date =>
-      writeShort(date.toEpochDay().toShort, buf)
+      buf.putShort(date.toEpochDay().toShort)
     }
   }
 
@@ -19,25 +18,24 @@ object ColumnDataEncoders {
     }
   }
 
-  // val enum8ColumnDataEncoder: Encoder[Enum8ColumnData] = Encoder { (col, buf) =>
-  //   val enumDefs: String = col.enums.toList.sortBy(_._1).map(t => t._1 + " = " + t._2).mkString(",")
-  //   writeString(s"Enum8($enumDefs)", buf)
-  //   col.data.foreach { e =>
-  //     val b: Byte = (e & 0xff).toByte
-  //     buf.put(b)
-  //   }
-  // }
+  val enum8ColumnDataEncoder: Encoder[Enum8ColumnData] = Encoder { (col, buf) =>
+    col.data.foreach(buf.put)
+  }
+
+  val enum16ColumnDataEncoder: Encoder[Enum16ColumnData] = Encoder { (col, buf) =>
+    col.data.foreach(buf.putShort)
+  }
 
   val fixedStringColumnDataEncoder: Encoder[FixedStringColumnData] = Encoder { (col, buf) =>
     col.data.foreach(str => buf.put(str.getBytes("UTF-8")))
   }
 
   val float32ColumnDataEncoder: Encoder[Float32ColumnData] = Encoder { (col, buf) =>
-    col.data.foreach(writeFloat(_, buf))
+    col.data.foreach(buf.putFloat)
   }
 
   val float64ColumnDataEncoder: Encoder[Float64ColumnData] = Encoder { (col, buf) =>
-    col.data.foreach(writeDouble(_, buf))
+    col.data.foreach(buf.putDouble)
   }
 
   val int8ColumnDataEncoder: Encoder[Int8ColumnData] = Encoder { (col, buf) =>
@@ -45,7 +43,7 @@ object ColumnDataEncoders {
   }
 
   val int16ColumnDataEncoder: Encoder[Int16ColumnData] = Encoder { (col, buf) =>
-    col.data.foreach(writeShort(_, buf))
+    col.data.foreach(buf.putShort)
   }
 
   val int32ColumnDataEncoder: Encoder[Int32ColumnData] = Encoder { (col, buf) =>
@@ -53,7 +51,16 @@ object ColumnDataEncoders {
   }
 
   val int64ColumnDataEncoder: Encoder[Int64ColumnData] = Encoder { (col, buf) =>
-    col.data.foreach(writeLong(_, buf))
+    col.data.foreach(buf.putLong)
+  }
+
+  def nullableColumnDataEncoder(encoder: Encoder[ColumnData]): Encoder[NullableColumnData] = Encoder { (col, buf) =>
+    col.nulls.foreach { b =>
+      val byte: Byte = if(b) 1 else 0
+      buf.put(byte)
+    }
+
+    encoder.write(col.data, buf)
   }
 
   val stringColumnDataEncoder: Encoder[StringColumnData] = Encoder { (col, buf) =>
@@ -67,62 +74,52 @@ object ColumnDataEncoders {
     }
   }
 
-  def writeShort(s: Short, buf: ByteBuffer): Unit = {
-    buf.putShort(s)
-    ()
-  }
-
-  def writeLong(n: Long, buf: ByteBuffer): Unit = {
-    buf.putLong(n)
-    ()
-  }
-
-  def writeDouble(n: Double, buf: ByteBuffer): Unit = {
-    buf.putDouble(n)
-    ()
-  }
-
-  def writeFloat(n: Float, buf: ByteBuffer): Unit = {
-    buf.putFloat(n)
-    ()
-  }
-
   val columnDataEncoder: Encoder[ColumnData] = Encoder { (col, buf) =>
+    val colType: String = ColumnDataUtil.getType(col)
+    writeString(colType, buf)
+
+    columnDataOnlyEncoder.write(col, buf)
+  }
+
+  val columnDataOnlyEncoder: Encoder[ColumnData] = Encoder { (col, buf) =>
     col match {
-      case col: DateColumnData =>
-        writeString("Date", buf)
-        dateColumnDataEncoder.write(col, buf)
-      case col: DateTimeColumnData =>
-        writeString("DateTime", buf)
-        dateTimeColumnDataEncoder.write(col, buf)
-      // case col: Enum8ColumnData => enum8ColumnDataEncoder.write(col, buf)
-      case col: FixedStringColumnData =>
-        writeString(s"FixedString(${col.strLength})", buf)
-        fixedStringColumnDataEncoder.write(col, buf)
-      case col: Float32ColumnData =>
-        writeString("Float32", buf)
-        float32ColumnDataEncoder.write(col, buf)
-      case col: Float64ColumnData =>
-        writeString("Float64", buf)
-        float64ColumnDataEncoder.write(col, buf)
-      case col: Int8ColumnData =>
-        writeString("Int8", buf)
-        int8ColumnDataEncoder.write(col, buf)
-      case col: Int16ColumnData =>
-        writeString("Int16", buf)
-        int16ColumnDataEncoder.write(col, buf)
-      case col: Int32ColumnData =>
-        writeString("Int32", buf)
-        int32ColumnDataEncoder.write(col, buf)
-      case col: Int64ColumnData =>
-        writeString("Int64", buf)
-        int64ColumnDataEncoder.write(col, buf)
-      case col: StringColumnData =>
-        writeString("String", buf)
-        stringColumnDataEncoder.write(col, buf)
-      case col: UuidColumnData =>
-        writeString("UUID", buf)
-        uuidColumnDataEncoder.write(col, buf)
+      case col: DateColumnData => dateColumnDataEncoder.write(col, buf)
+      case col: DateTimeColumnData => dateTimeColumnDataEncoder.write(col, buf)
+      case col: Enum8ColumnData => enum8ColumnDataEncoder.write(col, buf)
+      case col: Enum16ColumnData => enum16ColumnDataEncoder.write(col, buf)
+      case col: FixedStringColumnData => fixedStringColumnDataEncoder.write(col, buf)
+      case col: Float32ColumnData => float32ColumnDataEncoder.write(col, buf)
+      case col: Float64ColumnData => float64ColumnDataEncoder.write(col, buf)
+      case col: Int8ColumnData => int8ColumnDataEncoder.write(col, buf)
+      case col: Int16ColumnData => int16ColumnDataEncoder.write(col, buf)
+      case col: Int32ColumnData => int32ColumnDataEncoder.write(col, buf)
+      case col: Int64ColumnData => int64ColumnDataEncoder.write(col, buf)
+      case col: NullableColumnData => nullableColumnDataEncoder(columnDataOnlyEncoder).write(col, buf)
+      case col: StringColumnData => stringColumnDataEncoder.write(col, buf)
+      case col: UuidColumnData => uuidColumnDataEncoder.write(col, buf)
     } 
+  }
+}
+
+object ColumnDataUtil {
+  def getType(col: ColumnData): String = col match {
+    case _: DateColumnData => "Date"
+    case _: DateTimeColumnData => "DateTime"
+    case col: Enum8ColumnData =>
+      val enumDefs: String = col.enums.toList.sortBy(_._1).map(t => s"'${t._2}' = ${t._1}").mkString(",")
+      s"Enum8($enumDefs)"
+    case col: Enum16ColumnData =>
+      val enumDefs: String = col.enums.toList.sortBy(_._1).map(t => s"'${t._2}' = ${t._1}").mkString(",")
+      s"Enum16($enumDefs)"
+    case _: FixedStringColumnData => "FixedString"
+    case _: Float32ColumnData => "Float32"
+    case _: Float64ColumnData => "Float64"
+    case _: Int8ColumnData => "Int8"
+    case _: Int16ColumnData => "Int16"
+    case _: Int32ColumnData => "Int32"
+    case _: Int64ColumnData => "Int64"
+    case col: NullableColumnData => s"Nullable(${getType(col.data)})"
+    case _: StringColumnData => "String"
+    case _: UuidColumnData => "UUID"
   }
 }
