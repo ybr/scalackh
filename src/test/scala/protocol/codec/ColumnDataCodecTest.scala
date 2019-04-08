@@ -142,6 +142,46 @@ object ColumnDataCodecTest extends Properties("Codec ColumnData") {
     l1 == l2.toList
   }
 
+  property("UInt8") = forAll(Gen.listOfN(10, Gen.chooseNum(Byte.MinValue, Byte.MaxValue))) { (l1: List[Byte]) =>
+    val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
+
+    ColumnDataEncoders.uint8ColumnDataEncoder.write(UInt8ColumnData(l1.toArray), buf)
+    buf.position(0)
+    val Consumed(UInt8ColumnData(l2)) = ColumnDataDecoders.uint8ColumnDataDecoder(l1.length).read(buf)
+
+    l1 == l2.toList
+  }
+
+  property("UInt16") = forAll(Gen.listOfN(10, Gen.chooseNum(Short.MinValue, Short.MaxValue))) { (l1: List[Short]) =>
+    val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
+
+    ColumnDataEncoders.uint16ColumnDataEncoder.write(UInt16ColumnData(l1.toArray), buf)
+    buf.position(0)
+    val Consumed(UInt16ColumnData(l2)) = ColumnDataDecoders.uint16ColumnDataDecoder(l1.length).read(buf)
+
+    l1 == l2.toList
+  }
+
+  property("UInt32") = forAll(Gen.listOfN(10, Gen.chooseNum(Int.MinValue, Int.MaxValue))) { (l1: List[Int]) =>
+    val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
+
+    ColumnDataEncoders.uint32ColumnDataEncoder.write(UInt32ColumnData(l1.toArray), buf)
+    buf.position(0)
+    val Consumed(UInt32ColumnData(l2)) = ColumnDataDecoders.uint32ColumnDataDecoder(l1.length).read(buf)
+
+    l1 == l2.toList
+  }
+
+  property("UInt64") = forAll(Gen.listOfN(10, Gen.chooseNum(Long.MinValue, Long.MaxValue))) { (l1: List[Long]) =>
+    val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
+
+    ColumnDataEncoders.uint64ColumnDataEncoder.write(UInt64ColumnData(l1.toArray), buf)
+    buf.position(0)
+    val Consumed(UInt64ColumnData(l2)) = ColumnDataDecoders.uint64ColumnDataDecoder(l1.length).read(buf)
+
+    l1 == l2.toList
+  }
+
   property("UUID") = forAll(Gen.listOfN(10, Gen.uuid)) { (l1: List[UUID]) =>
     val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
 

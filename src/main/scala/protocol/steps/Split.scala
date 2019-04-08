@@ -52,6 +52,19 @@ object Split {
       val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
       StringColumnData(dataMaxSize) -> StringColumnData(dataRemaining)
 
+    case UInt8ColumnData(data) =>  
+      val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
+      UInt8ColumnData(dataMaxSize) -> UInt8ColumnData(dataRemaining)
+    case UInt16ColumnData(data) =>  
+      val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
+      UInt16ColumnData(dataMaxSize) -> UInt16ColumnData(dataRemaining)
+    case UInt32ColumnData(data) =>  
+      val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
+      UInt32ColumnData(dataMaxSize) -> UInt32ColumnData(dataRemaining)
+    case UInt64ColumnData(data) =>  
+      val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
+      UInt64ColumnData(dataMaxSize) -> UInt64ColumnData(dataRemaining)
+
     case UuidColumnData(data) =>  
       val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
       UuidColumnData(dataMaxSize) -> UuidColumnData(dataRemaining)

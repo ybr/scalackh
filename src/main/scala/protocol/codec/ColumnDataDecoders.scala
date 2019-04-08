@@ -43,10 +43,10 @@ object ColumnDataDecoders {
       case nullable(nullableType) => nullableColumnDataDecoder(nbRows, columnDataOnlyDecoder(nbRows, nullableType))
       case "String" => stringColumnDataDecoder(nbRows)
       // case tuple(types) => tupleColumnDataDecoder(nbRows, types)
-      // case "UInt8" => uint8ColumnDataDecoder(nbRows)
-      // case "UInt16" => uint16ColumnDataDecoder(nbRows)
-      // case "UInt32" => uint32ColumnDataDecoder(nbRows)
-      // case "UInt64" => uint64ColumnDataDecoder(nbRows)
+      case "UInt8" => uint8ColumnDataDecoder(nbRows)
+      case "UInt16" => uint16ColumnDataDecoder(nbRows)
+      case "UInt32" => uint32ColumnDataDecoder(nbRows)
+      case "UInt64" => uint64ColumnDataDecoder(nbRows)
       case "UUID" => uuidColumnDataDecoder(nbRows)
 
       case other => throw new UnsupportedOperationException(s"Column type not supported ${other}")
@@ -282,74 +282,65 @@ object ColumnDataDecoders {
   //   TupleColumnData(data)
   // }
 
-  // def uint8ColumnDataDecoder(nbRows: Int): Decoder[UInt8ColumnData] = Decoder { buf =>
-  //   val data: Array[Short] = new Array[Short](nbRows)
+  def uint8ColumnDataDecoder(nbRows: Int): Decoder[UInt8ColumnData] = Decoder { buf =>
+    if(buf.remaining < nbRows) NotEnough
+    else {
+      val data: Array[Byte] = new Array[Byte](nbRows)
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     data(i) = (0xff & buf.get()).toShort
-  //     i = i + 1
-  //   }
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = buf.get()
+        i = i + 1
+      }
 
-  //   UInt8ColumnData(data)
-  // }
+      Consumed(UInt8ColumnData(data))
+    }
+  }
 
-  // def uint16ColumnDataDecoder(nbRows: Int): Decoder[UInt16ColumnData] = Decoder { buf =>
-  //   val data: Array[Int] = new Array[Int](nbRows)
+  def uint16ColumnDataDecoder(nbRows: Int): Decoder[UInt16ColumnData] = Decoder { buf =>
+    if(buf.remaining < nbRows * 2) NotEnough
+    else {
+      val data: Array[Short] = new Array[Short](nbRows)
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     data(i) = (0xffff & readShort(buf)).toInt
-  //     i = i + 1
-  //   }
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = buf.getShort()
+        i = i + 1
+      }
 
-  //   UInt16ColumnData(data)
-  // }
+      Consumed(UInt16ColumnData(data))
+    }
+  }
 
-  // def uint32ColumnDataDecoder(nbRows: Int): Decoder[UInt32ColumnData] = Decoder { buf =>
-  //   val data: Array[Long] = new Array[Long](nbRows)
+  def uint32ColumnDataDecoder(nbRows: Int): Decoder[UInt32ColumnData] = Decoder { buf =>
+    if(buf.remaining < nbRows * 4) NotEnough
+    else {
+      val data: Array[Int] = new Array[Int](nbRows)
 
-  //   val bytes: Array[Byte] = new Array(4)
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = buf.getInt()
+        i = i + 1
+      }
 
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     buf.get(bytes)
+      Consumed(UInt32ColumnData(data))
+    }
+  }
 
-  //     var result: Long = (bytes(3) & 0xff).toLong
-  //     result = (result << 8) + (bytes(2) & 0xff)
-  //     result = (result << 8) + (bytes(1) & 0xff)
-  //     result = (result << 8) + (bytes(0) & 0xff)
+  def uint64ColumnDataDecoder(nbRows: Int): Decoder[UInt64ColumnData] = Decoder { buf =>
+    if(buf.remaining < nbRows * 8) NotEnough
+    else {
+      val data: Array[Long] = new Array[Long](nbRows)
 
-  //     data(i) = result
-  //     i = i + 1
-  //   }
+      var i: Int = 0
+      while(i < nbRows) {
+        data(i) = buf.getLong()
+        i = i + 1
+      }
 
-  //   UInt32ColumnData(data)
-  // }
-
-  // def uint64ColumnDataDecoder(nbRows: Int): Decoder[UInt64ColumnData] = Decoder { buf =>
-  //   val data: Array[BigInteger] = new Array[BigInteger](nbRows)
-
-  //   val bytes: Array[Byte] = new Array(8)
-
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-
-  //     bytes(7) = buf.get()
-  //     bytes(6) = buf.get()
-  //     bytes(5) = buf.get()
-  //     bytes(4) = buf.get()
-  //     bytes(3) = buf.get()
-  //     bytes(2) = buf.get()
-  //     bytes(1) = buf.get()
-  //     bytes(0) = buf.get()
-
-  //     data(i) = new BigInteger(bytes)
-  //     i = i + 1
-  //   }
-
-  //   UInt64ColumnData(data)
-  // }
+      Consumed(UInt64ColumnData(data))
+    }
+  }
 
   def uuidColumnDataDecoder(nbRows: Int): Decoder[UuidColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 16) NotEnough

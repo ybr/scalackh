@@ -21,10 +21,10 @@ case class Int8ColumnData(data: Array[Byte]) extends IntegerColumnData
 case class Int16ColumnData(data: Array[Short]) extends IntegerColumnData
 case class Int32ColumnData(data: Array[Int]) extends IntegerColumnData
 case class Int64ColumnData(data: Array[Long]) extends IntegerColumnData
-// case class UInt8ColumnData(data: Array[Short]) extends IntegerColumnData
-// case class UInt16ColumnData(data: Array[Int]) extends IntegerColumnData
-// case class UInt32ColumnData(data: Array[Long]) extends IntegerColumnData
-// case class UInt64ColumnData(data: Array[BigInteger]) extends IntegerColumnData
+case class UInt8ColumnData(data: Array[Byte]) extends IntegerColumnData
+case class UInt16ColumnData(data: Array[Short]) extends IntegerColumnData
+case class UInt32ColumnData(data: Array[Int]) extends IntegerColumnData
+case class UInt64ColumnData(data: Array[Long]) extends IntegerColumnData
 
 sealed trait EnumColumnData extends ColumnData
 case class Enum8ColumnData(enums: Map[Int, String], data: Array[Byte]) extends EnumColumnData

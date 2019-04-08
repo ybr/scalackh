@@ -67,6 +67,22 @@ object ColumnDataEncoders {
     col.data.foreach(writeString(_, buf))
   }
 
+  val uint8ColumnDataEncoder: Encoder[UInt8ColumnData] = Encoder { (col, buf) =>
+    col.data.foreach(buf.put)
+  }
+
+  val uint16ColumnDataEncoder: Encoder[UInt16ColumnData] = Encoder { (col, buf) =>
+    col.data.foreach(buf.putShort)
+  }
+
+  val uint32ColumnDataEncoder: Encoder[UInt32ColumnData] = Encoder { (col, buf) =>
+    col.data.foreach(buf.putInt)
+  }
+
+  val uint64ColumnDataEncoder: Encoder[UInt64ColumnData] = Encoder { (col, buf) =>
+    col.data.foreach(buf.putLong)
+  }
+
   val uuidColumnDataEncoder: Encoder[UuidColumnData] = Encoder { (col, buf) =>
     col.data.foreach { uuid =>
       buf.putLong(uuid.getMostSignificantBits())
@@ -96,6 +112,10 @@ object ColumnDataEncoders {
       case col: Int64ColumnData => int64ColumnDataEncoder.write(col, buf)
       case col: NullableColumnData => nullableColumnDataEncoder(columnDataOnlyEncoder).write(col, buf)
       case col: StringColumnData => stringColumnDataEncoder.write(col, buf)
+      case col: UInt8ColumnData => uint8ColumnDataEncoder.write(col, buf)
+      case col: UInt16ColumnData => uint16ColumnDataEncoder.write(col, buf)
+      case col: UInt32ColumnData => uint32ColumnDataEncoder.write(col, buf)
+      case col: UInt64ColumnData => uint64ColumnDataEncoder.write(col, buf)
       case col: UuidColumnData => uuidColumnDataEncoder.write(col, buf)
     } 
   }
@@ -120,6 +140,10 @@ object ColumnDataUtil {
     case _: Int64ColumnData => "Int64"
     case col: NullableColumnData => s"Nullable(${getType(col.data)})"
     case _: StringColumnData => "String"
+    case _: UInt8ColumnData => "UInt8"
+    case _: UInt16ColumnData => "UInt16"
+    case _: UInt32ColumnData => "UInt32"
+    case _: UInt64ColumnData => "UInt64"
     case _: UuidColumnData => "UUID"
   }
 }

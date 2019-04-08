@@ -6,6 +6,7 @@ import java.util.UUID
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
+import scalackh.math._
 import scalackh.protocol._
 
 trait DefaultColumnTransposers {
@@ -75,6 +76,26 @@ trait DefaultColumnTransposers {
   implicit val columnTransposerDateTime: ColumnTransposer[LocalDateTime] = ColumnTransposerInstances.columnTransposerBuilder(
     DateTimeColumnData(_),
     { case DateTimeColumnData(data) => data }
+  )
+
+  implicit val columnTransposerUInt8: ColumnTransposer[UInt8] = ColumnTransposerInstances.columnTransposerBuilder(
+    ui8s => UInt8ColumnData(ui8s.map(_.unsafeByte)),
+    { case UInt8ColumnData(data) => data.map(UInt8.unsign) }
+  )
+
+  implicit val columnTransposerUInt16: ColumnTransposer[UInt16] = ColumnTransposerInstances.columnTransposerBuilder(
+    ui16s => UInt16ColumnData(ui16s.map(_.unsafeShort)),
+    { case UInt16ColumnData(data) => data.map(UInt16.unsign) }
+  )
+
+  implicit val columnTransposerUInt32: ColumnTransposer[UInt32] = ColumnTransposerInstances.columnTransposerBuilder(
+    ui32s => UInt32ColumnData(ui32s.map(_.unsafeInt)),
+    { case UInt32ColumnData(data) => data.map(UInt32.unsign) }
+  )
+
+  implicit val columnTransposerUInt64: ColumnTransposer[UInt64] = ColumnTransposerInstances.columnTransposerBuilder(
+    ui64s => UInt64ColumnData(ui64s.map(_.unsafeLong)),
+    { case UInt64ColumnData(data) => data.map(UInt64.unsign) }
   )
 
   implicit val uuidTransposerString: ColumnTransposer[UUID] = ColumnTransposerInstances.columnTransposerBuilder(
