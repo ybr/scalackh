@@ -21,7 +21,7 @@ object UInt64Test extends Properties("UInt64") {
   }
 
   property("valid unsafe in [-2^63;-1] maps to higher half of utin32") = forAll(Gen.chooseNum[Long](Long.MinValue, -1).filter(_ < 0)) { (n1: Long) =>
-    val n2 = UInt64.unsign(n1).toBigInt
+    val n2 = UInt64(n1).toBigInt
     n2 == UInt64.MaxValue + 1 + BigInt(n1)
   }
 }

@@ -54,22 +54,22 @@ trait ArrayColumnTransposers {
 
   implicit val columnTransposerArrayUInt8: ColumnTransposer[Array[UInt8]] = ColumnTransposerInstances.columnTransposerBuilder(
     ui8s => ArrayColumnData(UInt8Array(ui8s.map(_.map(_.unsafeByte)))),
-    { case ArrayColumnData(UInt8Array(data)) => data.map(_.map(UInt8.unsign)) }
+    { case ArrayColumnData(UInt8Array(data)) => data.map(_.map(UInt8.apply)) }
   )
 
   implicit val columnTransposerArrayUInt16: ColumnTransposer[Array[UInt16]] = ColumnTransposerInstances.columnTransposerBuilder(
     ui16s => ArrayColumnData(UInt16Array(ui16s.map(_.map(_.unsafeShort)))),
-    { case ArrayColumnData(UInt16Array(data)) => data.map(_.map(UInt16.unsign)) }
+    { case ArrayColumnData(UInt16Array(data)) => data.map(_.map(UInt16.apply)) }
   )
 
   implicit val columnTransposerArrayUInt32: ColumnTransposer[Array[UInt32]] = ColumnTransposerInstances.columnTransposerBuilder(
     ui32s => ArrayColumnData(UInt32Array(ui32s.map(_.map(_.unsafeInt)))),
-    { case ArrayColumnData(UInt32Array(data)) => data.map(_.map(UInt32.unsign)) }
+    { case ArrayColumnData(UInt32Array(data)) => data.map(_.map(UInt32.apply)) }
   )
 
   implicit val columnTransposerArrayUInt64: ColumnTransposer[Array[UInt64]] = ColumnTransposerInstances.columnTransposerBuilder(
     ui64s => ArrayColumnData(UInt64Array(ui64s.map(_.map(_.unsafeLong)))),
-    { case ArrayColumnData(UInt64Array(data)) => data.map(_.map(UInt64.unsign)) }
+    { case ArrayColumnData(UInt64Array(data)) => data.map(_.map(UInt64.apply)) }
   )
 
   implicit val columnTransposerArrayUuid: ColumnTransposer[Array[UUID]] = ColumnTransposerInstances.columnTransposerBuilder(

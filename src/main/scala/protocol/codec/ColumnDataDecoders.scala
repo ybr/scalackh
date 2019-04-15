@@ -1,6 +1,5 @@
 package scalackh.protocol.codec
 
-import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import scala.collection.immutable.IntMap
@@ -63,11 +62,11 @@ object ColumnDataDecoders {
   def dateColumnDataDecoder(nbRows: Int): Decoder[DateColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 2) NotEnough
     else {
-      val data: Array[LocalDate] = new Array[LocalDate](nbRows)
+      val data: Array[Short] = new Array[Short](nbRows)
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = LocalDate.ofEpochDay(buf.getShort().toLong)
+        data(i) = buf.getShort()
         i = i + 1
       }
 
@@ -78,11 +77,11 @@ object ColumnDataDecoders {
   def dateTimeColumnDataDecoder(nbRows: Int): Decoder[DateTimeColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 4) NotEnough
     else {
-      val data: Array[LocalDateTime] = new Array[LocalDateTime](nbRows)
+      val data: Array[Int] = new Array[Int](nbRows)
 
       var i: Int = 0
       while(i < nbRows) {
-        data(i) = LocalDateTime.ofEpochSecond(buf.getInt().toLong, 0, ZoneOffset.UTC)
+        data(i) = buf.getInt()
         i = i + 1
       }
 

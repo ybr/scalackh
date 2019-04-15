@@ -3,7 +3,6 @@ package scalackh.protocol.codec
 import scalackh.protocol._
 
 import java.nio.{ByteBuffer, ByteOrder}
-import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import org.scalacheck._
@@ -12,7 +11,7 @@ import org.scalacheck.Prop.forAll
 import scala.collection.immutable.IntMap
 
 object ColumnDataCodecTest extends Properties("Codec ColumnData") {
-  property("Date") = forAll(Gen.listOfN(10, Gen.chooseNum(Short.MinValue, Short.MaxValue).map(short => LocalDate.ofEpochDay(short.toLong)))) { (l1: List[LocalDate]) =>
+  property("Date") = forAll(Gen.listOfN(10, Gen.chooseNum(Short.MinValue, Short.MaxValue))) { (l1: List[Short]) =>
     val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
 
     ColumnDataEncoders.dateColumnDataEncoder.write(DateColumnData(l1.toArray), buf)
@@ -22,7 +21,7 @@ object ColumnDataCodecTest extends Properties("Codec ColumnData") {
     l1 == l2.toList
   }
 
-  property("DateTime") = forAll(Gen.listOfN(10, Gen.chooseNum(Int.MinValue, Int.MaxValue).map(int => LocalDateTime.ofEpochSecond(int.toLong, 0, ZoneOffset.UTC)))) { (l1: List[LocalDateTime]) =>
+  property("DateTime") = forAll(Gen.listOfN(10, Gen.chooseNum(Int.MinValue, Int.MaxValue))) { (l1: List[Int]) =>
     val buf = ByteBuffer.allocate(1024).order(ByteOrder.LITTLE_ENDIAN)
 
     ColumnDataEncoders.dateTimeColumnDataEncoder.write(DateTimeColumnData(l1.toArray), buf)

@@ -1,21 +1,15 @@
 package scalackh.protocol.codec
 
-import java.time.ZoneOffset
-
 import scalackh.protocol._
 import scalackh.protocol.codec.DefaultEncoders.writeString
 
 object ColumnDataEncoders {
   val dateColumnDataEncoder: Encoder[DateColumnData] = Encoder { (col, buf) =>
-    col.data.foreach { date =>
-      buf.putShort(date.toEpochDay().toShort)
-    }
+    col.data.foreach(buf.putShort)
   }
 
   val dateTimeColumnDataEncoder: Encoder[DateTimeColumnData] = Encoder { (col, buf) =>
-    col.data.foreach { datetime =>
-      buf.putInt(datetime.toEpochSecond(ZoneOffset.UTC).toInt)
-    }
+    col.data.foreach(buf.putInt)
   }
 
   val enum8ColumnDataEncoder: Encoder[Enum8ColumnData] = Encoder { (col, buf) =>
