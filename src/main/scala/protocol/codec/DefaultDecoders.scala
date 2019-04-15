@@ -35,28 +35,4 @@ object DefaultDecoders {
     if(buf.remaining < 4) NotEnough
     else Consumed(buf.getInt())
   }
-
-  // val longDecoder: Decoder[Long] = Decoder { buf =>
-  //   if(buf.remaining < 8) NotEnough
-  //   else {
-  //     val s = buf.getLong()
-  //     Consumed(s)
-  //   }
-  // }
-
-  // val floatDecoder: Decoder[Float] = Decoder { buf =>
-  //   if(buf.remaining < 4) NotEnough
-  //   else {
-  //     val s = buf.getFloat()
-  //     Consumed(s)
-  //   }
-  // }
-
-  // val doubleDecoder: Decoder[Double] = Decoder { buf =>
-  //   if(buf.remaining < 8) NotEnough
-  //   else {
-  //     val s = buf.getDouble()
-  //     Consumed(s)
-  //   }
-  // }
 }

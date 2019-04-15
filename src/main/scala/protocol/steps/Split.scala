@@ -4,6 +4,52 @@ import scalackh.protocol._
 
 object Split {
   def splitColumn(maxSize: Int)(colData: ColumnData): (ColumnData, ColumnData) = colData match {
+    case ArrayColumnData(data) =>
+      data match {
+        case DateArray(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(DateArray(dataMaxSize)) -> ArrayColumnData(DateArray(dataRemaining))
+        case DateTimeArray(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(DateTimeArray(dataMaxSize)) -> ArrayColumnData(DateTimeArray(dataRemaining))
+        case Float32Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(Float32Array(dataMaxSize)) -> ArrayColumnData(Float32Array(dataRemaining))
+        case Float64Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(Float64Array(dataMaxSize)) -> ArrayColumnData(Float64Array(dataRemaining))
+        case Int8Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(Int8Array(dataMaxSize)) -> ArrayColumnData(Int8Array(dataRemaining))
+        case Int16Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(Int16Array(dataMaxSize)) -> ArrayColumnData(Int16Array(dataRemaining))
+        case Int32Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(Int32Array(dataMaxSize)) -> ArrayColumnData(Int32Array(dataRemaining))
+        case Int64Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(Int64Array(dataMaxSize)) -> ArrayColumnData(Int64Array(dataRemaining))
+        case StringArray(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(StringArray(dataMaxSize)) -> ArrayColumnData(StringArray(dataRemaining))
+        case UInt8Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(UInt8Array(dataMaxSize)) -> ArrayColumnData(UInt8Array(dataRemaining))
+        case UInt16Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(UInt16Array(dataMaxSize)) -> ArrayColumnData(UInt16Array(dataRemaining))
+        case UInt32Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(UInt32Array(dataMaxSize)) -> ArrayColumnData(UInt32Array(dataRemaining))
+        case UInt64Array(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(UInt64Array(dataMaxSize)) -> ArrayColumnData(UInt64Array(dataRemaining))
+        case UuidArray(arrayData) =>
+          val (dataMaxSize, dataRemaining) = arrayData.splitAt(maxSize)
+          ArrayColumnData(UuidArray(dataMaxSize)) -> ArrayColumnData(UuidArray(dataRemaining))
+      }
+
     case DateColumnData(data) =>  
       val (dataMaxSize, dataRemaining) = data.splitAt(maxSize)
       DateColumnData(dataMaxSize) -> DateColumnData(dataRemaining)

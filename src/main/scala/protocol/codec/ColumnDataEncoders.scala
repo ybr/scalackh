@@ -117,6 +117,7 @@ object ColumnDataEncoders {
       case col: UInt32ColumnData => uint32ColumnDataEncoder.write(col, buf)
       case col: UInt64ColumnData => uint64ColumnDataEncoder.write(col, buf)
       case col: UuidColumnData => uuidColumnDataEncoder.write(col, buf)
+      case col: ArrayColumnData => ArrayEncoders.arrayEncoder.write(col.data, buf)
     } 
   }
 }
@@ -145,5 +146,24 @@ object ColumnDataUtil {
     case _: UInt32ColumnData => "UInt32"
     case _: UInt64ColumnData => "UInt64"
     case _: UuidColumnData => "UUID"
+    case col: ArrayColumnData => s"Array(${getArrayType(col.data)})"
   }
+
+  def getArrayType(array: ClickhouseArray): String = array match {
+    case _: DateArray => "Date"
+    case _: DateTimeArray => "DateTime"
+    case _: Float32Array => "Float32"
+    case _: Float64Array => "Float64"
+    case _: Int8Array => "Int8"
+    case _: Int16Array => "Int16"
+    case _: Int32Array => "Int32"
+    case _: Int64Array => "Int64"
+    case _: StringArray => "String"
+    case _: UInt8Array => "UInt8"
+    case _: UInt16Array => "UInt16"
+    case _: UInt32Array => "UInt32"
+    case _: UInt64Array => "UInt64"
+    case _: UuidArray => "UUID"
+  }
+  
 }

@@ -15,25 +15,25 @@ Milestone
 # 4
 - tests
 - support for column types (
-    [ ] simple 1d-array,
+    [X] simple 1d-array of native elements (ints, floats, strings),
     [X] simple nullable,
     [X] enum8/16,
     [X] fixedstring,
-    [ ] uint8/16/32/64,
+    [X] uint8/16/32/64,
     [X] uuid)
 
 # 5
+- settings
+
+# 6
 - reactive frontend (netty + monix)
 
 # 7
-- settings
+- performance jmh
+- optimization
  
 # 8
 - support for column types (generalized array, tuple)
-
-# 9
-- performance jmh
-- optimization
 
 
 Reads
@@ -54,36 +54,10 @@ Reads
 [v] Nested
 [v] Nullable
 [v] String
-[v] Tuple
+[ ] Tuple
 [v] UInt8
 [v] UInt16
 [v] UInt32
 [v] UInt64
 [v] UUID
-[ ] generic data types (array of array, tuples, ...)
-
-Writes
-
-[ ] Array
-[v] Date
-[v] DateTime
-[ ] Decimal
-[ ] Enum8
-[ ] Enum16
-[ ] FixedString
-[v] Float32
-[v] Float64
-[v] Int8
-[v] Int16
-[v] Int32
-[v] Int64
-[ ] Nested
-[v] Nullable
-[v] String
-[ ] Tuple
-[ ] UInt8
-[ ] UInt16
-[ ] UInt32
-[ ] UInt64
-[ ] UUID
 [ ] generic data types (array of array, tuples, ...)

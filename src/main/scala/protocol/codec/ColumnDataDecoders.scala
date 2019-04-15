@@ -14,8 +14,7 @@ object ColumnDataDecoders {
   val enum8 = "Enum8\\((.+)\\)".r
   val enum16 = "Enum16\\((.+)\\)".r
   val enumDef = "'(.+)' = ([0-9]+)".r
-  // val array = "Array\\((.+)\\)".r
-  // val tuple = "Tuple\\((.+)\\)".r
+  val array = "Array\\((.+)\\)".r
 
   def columnDataDecoder(nbRows: Int): Decoder[ColumnData] = for {
     columnType <- stringDecoder
@@ -24,7 +23,7 @@ object ColumnDataDecoders {
 
   def columnDataOnlyDecoder(nbRows: Int, columnType: String): Decoder[ColumnData] = {
     columnType match {
-      // case array(elemType) => arrayColumnDataDecoder(nbRows, elemType).read(buf)
+      case array(elemType) => arrayColumnDataDecoder(nbRows, elemType)
       case "Date" => dateColumnDataDecoder(nbRows)
       case "DateTime" => dateTimeColumnDataDecoder(nbRows)
       case enum8(enumStr) =>
@@ -42,13 +41,11 @@ object ColumnDataDecoders {
       case "Int64" => int64ColumnDataDecoder(nbRows)
       case nullable(nullableType) => nullableColumnDataDecoder(nbRows, columnDataOnlyDecoder(nbRows, nullableType))
       case "String" => stringColumnDataDecoder(nbRows)
-      // case tuple(types) => tupleColumnDataDecoder(nbRows, types)
       case "UInt8" => uint8ColumnDataDecoder(nbRows)
       case "UInt16" => uint16ColumnDataDecoder(nbRows)
       case "UInt32" => uint32ColumnDataDecoder(nbRows)
       case "UInt64" => uint64ColumnDataDecoder(nbRows)
       case "UUID" => uuidColumnDataDecoder(nbRows)
-
       case other => throw new UnsupportedOperationException(s"Column type not supported ${other}")
     }
   }
@@ -57,11 +54,11 @@ object ColumnDataDecoders {
     case enumDef(key, value) => (value.toInt, key)
   }: _*)
 
-  // def arrayColumnDataDecoder(nbRows: Int, elemType: String): Decoder[ArrayColumnData] = Decoder { buf =>
-  //   val arrays = arrayDecoder(nbRows, elemType)
-
-  //   ArrayColumnData(arrays)
-  // }
+  def arrayColumnDataDecoder(nbRows: Int, elemType: String): Decoder[ArrayColumnData] = {
+    ArrayDecoders.arrayDecoder(nbRows, elemType).map { arrays =>
+      ArrayColumnData(arrays)
+    }
+  }
 
   def dateColumnDataDecoder(nbRows: Int): Decoder[DateColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 2) NotEnough
@@ -256,7 +253,7 @@ object ColumnDataDecoders {
     var hasEnough: Boolean = true
     var i: Int = 0
 
-    while(i < nbRows) {
+    while(i < nbRows && hasEnough) {
       DefaultDecoders.stringDecoder.read(buf) match {
         case Consumed(str) => data(i) = str
         case NotEnough => hasEnough = false
@@ -267,20 +264,6 @@ object ColumnDataDecoders {
     if(hasEnough) Consumed(StringColumnData(data))
     else NotEnough
   }
-
-  // def tupleColumnDataDecoder(nbRows: Int, typesStr: String): Decoder[TupleColumnData] = Decoder { buf =>
-  //   val Decoder = tupleDecoder(typesStr)
-
-  //   val data: Array[TupleData] = new Array[TupleData](nbRows)
-
-  //   var i: Int = 0
-  //   while(i < nbRows) {
-  //     data(i) = Decoder.read(buf)
-  //     i = i + 1
-  //   }
-
-  //   TupleColumnData(data)
-  // }
 
   def uint8ColumnDataDecoder(nbRows: Int): Decoder[UInt8ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows) NotEnough
