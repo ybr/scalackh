@@ -89,7 +89,7 @@ object ColumnDataDecoders {
     }
   }
 
-  def enum8ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[EnumColumnData] = Decoder { buf =>
+  def enum8ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[Enum8ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows) NotEnough
     else {
       val data: Array[Byte] = new Array[Byte](nbRows)
@@ -104,7 +104,7 @@ object ColumnDataDecoders {
     }
   }
 
-  def enum16ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[EnumColumnData] = Decoder { buf =>
+  def enum16ColumnDataDecoder(enums: Map[Int, String], nbRows: Int): Decoder[Enum16ColumnData] = Decoder { buf =>
     if(buf.remaining < nbRows * 2) NotEnough
     else {
       val data: Array[Short] = new Array[Short](nbRows)
