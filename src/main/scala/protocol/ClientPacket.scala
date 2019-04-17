@@ -12,7 +12,7 @@ case class ClientInfo(
 
 case class Query(
   id: Option[String],
-  // settings: Map[String, AnyRef],
+  settings: Map[String, Any],
   stage: QueryProcessingStage,
   compression: Option[CompressionMethod],
   query: String

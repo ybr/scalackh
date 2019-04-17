@@ -14,6 +14,7 @@ trait Client {
   def password(): Option[String]
   def name(): String
   def version(): Version
+  def settings(): Map[String, Any]
 
   def connect(): Try[Connection]
 }
@@ -29,13 +30,14 @@ object Client {
             user: Option[String],
             password: Option[String],
             name: String,
-            version: Version): Client = {
-    CoreClient(address, port, user, password, name, version)
+            version: Version,
+            settings: Map[String, Any]): Client = {
+    CoreClient(address, port, user, password, name, version, settings)
   }
 
-  def apply(host: String, port: Int, user: Option[String] = None, password: Option[String] = None): Try[Client] = Try {
+  def apply(host: String, port: Int, user: Option[String] = None, password: Option[String] = None, settings: Map[String, Any] = Map.empty): Try[Client] = Try {
     val address: InetAddress = InetAddress.getByName(host)
-    Client(address, port, user, password, name, version)
+    Client(address, port, user, password, name, version, settings)
   }
 }
 

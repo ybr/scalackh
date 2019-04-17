@@ -8,12 +8,12 @@ object LEB128 {
   val varIntDecoder: Decoder[Int] = Decoder { buf =>
     var hasEnough: Boolean = true
     var result: Int = 0
-    var byte: Int = 0
+    var byte: Byte = 0
     var shift: Int = 0
 
     do {
       if(buf.remaining >= 1) {
-        byte = buf.get().toInt
+        byte = buf.get()
         result |= (byte & 0x7f) << shift
         shift += 7
       }
@@ -30,6 +30,37 @@ object LEB128 {
     var value: Int = n
     do {
       var byte: Int = value & 0x7f // low order 7 bites of value
+      value = value >> 7
+      if(value != 0) byte = byte | 0x80  // more bytes to come set high order bit of byte
+      buf.put(byte.toByte)
+    } while(value != 0)
+  }
+
+  val varLongDecoder: Decoder[Long] = Decoder { buf =>
+    var hasEnough: Boolean = true
+    var result: Long = 0
+    var byte: Byte = 0
+    var shift: Int = 0
+
+    do {
+      if(buf.remaining >= 1) {
+        byte = buf.get()
+        result |= (byte & 0x7f).toLong << shift
+        shift += 7
+      }
+      else {
+        hasEnough = false
+      }
+    } while((byte & 0x80) != 0 && hasEnough)
+
+    if(hasEnough) Consumed(result)
+    else NotEnough
+  }
+
+  def writeVarLong(n: Long, buf: ByteBuffer): Unit = {
+    var value: Long = n
+    do {
+      var byte: Int = (value & 0x7f).toInt // low order 7 bites of value
       value = value >> 7
       if(value != 0) byte = byte | 0x80  // more bytes to come set high order bit of byte
       buf.put(byte.toByte)

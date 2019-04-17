@@ -24,6 +24,7 @@ Milestone
 
 # 5
 - settings
+- manage exceptions from the server (forinstance when sending bad settings)
 
 # 6
 - reactive frontend (netty + monix)

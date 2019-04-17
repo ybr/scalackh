@@ -10,7 +10,14 @@ import scalackh.client.{Client, Connection}
 import scalackh.protocol._
 import scalackh.protocol.steps._
 
-case class CoreClient(address: InetAddress, port: Int, user: Option[String], password: Option[String], name: String, version: Version) extends Client {
+case class CoreClient(
+  address: InetAddress,
+  port: Int,
+  user: Option[String],
+  password: Option[String],
+  name: String,
+  version: Version,
+  settings: Map[String, Any]) extends Client {
 
   def connect(): Try[Connection] = Try {
     val socket = new Socket(address, port)
@@ -31,6 +38,6 @@ case class CoreClient(address: InetAddress, port: Int, user: Option[String], pas
     .collect { case Emit(si: ServerInfo, _) => si }
     .next
 
-    CoreConnection(socket, is, os, in , out, serverInfo)
+    CoreConnection(socket, is, os, in , out, serverInfo, settings)
   }
 }

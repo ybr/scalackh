@@ -31,7 +31,7 @@ object ClientPacketEncoders {
   val queryEncoder: Encoder[Query] = Encoder { (q, buf) =>
     writeVarInt(QUERY, buf)
     writeString(q.id.getOrElse(""), buf)
-    settingsEncoder.write((), buf)
+    SettingEncoders.settingsEncoder.write(q.settings, buf)
     stageEncoder.write(q.stage, buf)
     writeVarInt(0, buf) // compression TODO
     writeString(q.query, buf)
@@ -60,13 +60,6 @@ object ClientPacketEncoders {
     writeVarInt(2, buf) // field num for bucket num
     buf.putInt(bi.bucketNum)
     writeVarInt(0, buf) // end of fields
-  }
-
-  // it should be something like a dictionary
-  val settingsEncoder: Encoder[Unit] = Encoder { (_, buf) =>
-    // writeString("extremes", buf)
-    // buf.put(0.toByte)
-    writeString("", buf) // end of settings
   }
 
   val stageEncoder: Encoder[QueryProcessingStage] = Encoder { (s, buf) =>

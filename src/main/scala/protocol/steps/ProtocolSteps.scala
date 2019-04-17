@@ -42,8 +42,8 @@ object ProtocolSteps {
     }
   }
 
-  def execute(q: String, externalTables: Iterator[Block], values: Iterator[Block]): ProtocolStep = Cont.o { buf =>
-    ClientPacketEncoders.message.write(Query(None, Complete, None, q), buf)
+  def execute(q: String, externalTables: Iterator[Block], values: Iterator[Block], settings: Map[String, Any]): ProtocolStep = Cont.o { buf =>
+    ClientPacketEncoders.message.write(Query(None, settings, Complete, None, q), buf)
     externalTables.foreach { extBlock =>
       ClientPacketEncoders.message.write(ClientDataBlock(extBlock), buf)
     }
