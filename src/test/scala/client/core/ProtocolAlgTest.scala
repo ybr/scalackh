@@ -22,7 +22,7 @@ object ProtocolAlgTest extends SimpleTestSuite {
     val in = ByteBuffer.allocate(1024)
     val out = ByteBuffer.allocate(0)
 
-    ProtocolAlg.iterator(is, os, in, out, NeedsInput.i(_ => Done)).next
+    ProtocolAlg.iterator(is, os, in, out, NeedsInput.i(_ => Done), true).next
 
     val (afterPos, afterLimit) = (in.position, in.limit)
 
@@ -49,12 +49,12 @@ object ProtocolAlgTest extends SimpleTestSuite {
     assertEquals(in.position, 0)
     assertEquals(in.limit, size)
 
-    ProtocolAlg.needsInputStep(is, in, out, step(1))
+    ProtocolAlg.needsInputStep(is, in, out, step(1), true)
     assertEquals(in.position, 1)
     assertEquals(in.limit, 4)
 
     is.reset() // input stream receives another data
-    ProtocolAlg.needsInputStep(is, in, out, step(2))
+    ProtocolAlg.needsInputStep(is, in, out, step(2), false)
     assertEquals(in.position, 1)
     assertEquals(in.limit, 7)
   }

@@ -34,7 +34,7 @@ case class CoreClient(
       user.getOrElse("default"),
       password.getOrElse("default"),
       ""
-    )))
+    )), true)
     .collect { case Emit(si: ServerInfo, _) => si }
     .next
 

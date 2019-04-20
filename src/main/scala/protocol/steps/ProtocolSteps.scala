@@ -1,5 +1,7 @@
 package scalackh.protocol.steps
 
+import java.nio.ByteBuffer
+
 import scalackh.protocol._
 import scalackh.protocol.codec._
 
@@ -11,22 +13,14 @@ object ProtocolSteps {
     receiveHello
   }
 
-  val receiveHello: ProtocolStep = NeedsInput.i { buf =>
-    val decodedPacket: DecoderResult[ServerPacket] = ServerPacketDecoders.protocol.read(buf)
-
-    decodedPacket match {
-      case Consumed(packet) => packet match {
-        case info: ServerInfo => Emit(info, Done)
-        case other => Error("Unexpected packet: " + other)
-      }
-      case NotEnough => receiveHello
-    }
+  val receiveHello: ProtocolStep = receiveDirect {
+    case info: ServerInfo => Emit(info, Done)
   }
 
   val receiveResult: ProtocolStep = Cont.i { buf =>
     val decodedPacket: DecoderResult[ServerPacket] = ServerPacketDecoders.protocol.read(buf)
     decodedPacket match {
-      case NotEnough => NeedsInput(receiveResult)
+      case NotEnough => checkBufferFull(buf, NeedsInput(receiveResult))
       case Consumed(packet) => packet match {
         case p: ServerInfo => Error("Unexpected packet: " + p)
         case p: ServerDataBlock => Emit(p, receiveResult)
@@ -42,7 +36,7 @@ object ProtocolSteps {
     }
   }
 
-  def execute(q: String, externalTables: Iterator[Block], values: Iterator[Block], settings: Map[String, Any]): ProtocolStep = Cont.o { buf =>
+  def execute(q: String, externalTables: Iterator[Block], values: Iterator[Block], settings: Map[String, Any]): ProtocolStep = handleServerException(Cont.o { buf =>
     ClientPacketEncoders.message.write(Query(None, settings, Complete, None, q), buf)
     externalTables.foreach { extBlock =>
       ClientPacketEncoders.message.write(ClientDataBlock(extBlock), buf)
@@ -53,20 +47,13 @@ object ProtocolSteps {
       else (sample: Block) => sendData(sample, values)(receiveResult)
     }
     receiveSample(nextWithSample)
+  })
+
+  def receiveSample(nextWithSample: Block => ProtocolStep): ProtocolStep = receiveDirect {
+    case p: ServerDataBlock => Emit(p, Cont(nextWithSample(p.block)))
   }
 
-  def receiveSample(nextWithSample: Block => ProtocolStep): ProtocolStep = NeedsInput.i { buf =>
-    val decoderPacket: DecoderResult[ServerPacket] = ServerPacketDecoders.protocol.read(buf)
-    decoderPacket match {
-      case NotEnough => receiveSample(nextWithSample)
-      case Consumed(packet) => packet match {
-        case p: ServerDataBlock => Emit(p, Cont(nextWithSample(p.block)))
-        case other => Error("Unexpected packet: " + other)
-      }
-    }
-  }
-
-  def sendData(sample: Block, values: Iterator[Block])(afterSend: => ProtocolStep): ProtocolStep = Cont.o { buf =>
+  def sendData(sample: Block, values: Iterator[Block])(afterSend: => ProtocolStep): ProtocolStep = handleServerException(Cont.o { buf =>
     if(values.hasNext) {
       val block = values.next()
       val blockWithNames = sample.copy(
@@ -82,9 +69,9 @@ object ProtocolSteps {
       ClientPacketEncoders.message.write(ClientDataBlock(Block.empty), buf) // end of data
       afterSend
     }
-  }
+  })
 
-  def sendBlock(block: Block)(next: => ProtocolStep): ProtocolStep = Cont.o { buf =>
+  def sendBlock(block: Block)(next: => ProtocolStep): ProtocolStep = handleServerException(Cont.o { buf =>
     if(block.nbRows <= MAX_ROWS_IN_BLOCK) {
       ClientPacketEncoders.message.write(ClientDataBlock(block), buf)
       next
@@ -93,6 +80,39 @@ object ProtocolSteps {
       val (maxSizeBlock, remainingBlock) = Split.splitBlock(MAX_ROWS_IN_BLOCK)(block)
       ClientPacketEncoders.message.write(ClientDataBlock(maxSizeBlock), buf)
       sendBlock(remainingBlock)(next)
+    }
+  })
+
+  // manages unexpected packets such as server error
+  def handleServerException(next: => ProtocolStep): ProtocolStep = Cont.i { (bufIn) =>
+    if(bufIn.hasRemaining()) {
+      // if something has been received this might be a server exception
+      ServerPacketDecoders.protocol.read(bufIn) match {
+        case NotEnough => checkBufferFull(bufIn, NeedsInput(handleServerException(next)))
+        case Consumed(packet) => packet match {
+          case x: ServerException => Emit(x, Done)
+          case other => Error("Unexpected packet: " + other)
+        }
+      }
+    }
+    else next
+  }
+
+  def checkBufferFull(buf: ByteBuffer, next: => ProtocolStep): ProtocolStep = {
+    // buffer is not full
+    if(buf.limit != buf.capacity) next
+    else Error(s"Read buffer is full, consider setting a lower value for max_block_size")
+  }
+
+  def receiveDirect(f: PartialFunction[ServerPacket, ProtocolStep]): ProtocolStep = NeedsInput.i { buf =>
+    ServerPacketDecoders.protocol.read(buf) match {
+      case NotEnough => checkBufferFull(buf, receiveDirect(f))
+      case Consumed(packet) =>
+        if(f.isDefinedAt(packet)) f(packet)
+        else packet match {
+          case x: ServerException => Emit(x, Done)
+          case other => Error("Unexpected packet: " + other)
+        }
     }
   }
 }

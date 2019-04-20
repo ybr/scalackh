@@ -55,7 +55,8 @@ object ProtocolStepsTest extends SimpleTestSuite {
   }
 
   test("receiveResult not enough data") {
-    val emptyBuf = ByteBuffer.allocate(0)
+    val emptyBuf = ByteBuffer.allocate(1)
+    emptyBuf.flip()
 
     val step1 = ProtocolSteps.receiveResult match {
       case Cont(next) => next(emptyBuf, emptyBuf)
@@ -63,5 +64,17 @@ object ProtocolStepsTest extends SimpleTestSuite {
     }
 
     assertEquals(step1.getClass, classOf[NeedsInput])
+  }
+
+  test("receiveResult not enough data, buffer is full") {
+    val emptyBuf = ByteBuffer.allocate(0)
+    emptyBuf.flip()
+
+    val step1 = ProtocolSteps.receiveResult match {
+      case Cont(next) => next(emptyBuf, emptyBuf)
+      case state => throw new IllegalStateException(s"Shall be in step Cont instead of $state")
+    }
+
+    assertEquals(step1, Error("Read buffer is full, consider setting a lower value for max_block_size"))
   }
 }

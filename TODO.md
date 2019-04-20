@@ -25,6 +25,10 @@ Milestone
 # 5
 - settings
 - manage exceptions from the server (forinstance when sending bad settings)
+- max_insert_block_size to split block while sending data
+- client buffer size ?
+- first time the in buffer is touched to manage overflow of buffer with a user firendly exception message
+
 
 # 6
 - reactive frontend (netty + monix)

@@ -23,7 +23,7 @@ case class CoreConnection(
 
   def queryPackets(sql: String, externalTables: Iterator[Block] = Iterator.empty, querySetting: Map[String, Any]): Iterator[ServerPacket] = {
     ProtocolAlg
-      .iterator(is, os, in, out, ProtocolSteps.execute(sql, externalTables, Iterator.empty, settings ++ querySetting))
+      .iterator(is, os, in, out, ProtocolSteps.execute(sql, externalTables, Iterator.empty, settings ++ querySetting), false)
       .collect {
         case Emit(x: ServerException, _) => throw new ClickhouseServerException(x)
         case Emit(packet, _) => packet
@@ -37,7 +37,7 @@ case class CoreConnection(
   }
 
   def insert(sql: String, values: Iterator[Block], querySetting: Map[String, Any]): Unit = {
-    ProtocolAlg.iterator(is, os, in, out, ProtocolSteps.execute(sql, Iterator.empty, values, settings ++ querySetting))
+    ProtocolAlg.iterator(is, os, in, out, ProtocolSteps.execute(sql, Iterator.empty, values, settings ++ querySetting), false)
     .foreach(_ => ())
   }
 
