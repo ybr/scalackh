@@ -22,11 +22,11 @@ case class CoreClient(
   def connect(): Try[Connection] = Try {
     val socket = new Socket(address, port)
 
-    val is = new BufferedInputStream(socket.getInputStream(), Client.BUFFER_SIZE)
-    val os = new BufferedOutputStream(socket.getOutputStream(), Client.BUFFER_SIZE)
+    val is = new BufferedInputStream(socket.getInputStream(), Client.DefaultBufferSize)
+    val os = new BufferedOutputStream(socket.getOutputStream(), Client.DefaultBufferSize)
 
-    val in = ByteBuffer.allocate(Client.BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN)
-    val out = ByteBuffer.allocate(Client.BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN)
+    val in = ByteBuffer.allocate(Client.DefaultBufferSize).order(ByteOrder.LITTLE_ENDIAN)
+    val out = ByteBuffer.allocate(Client.DefaultBufferSize).order(ByteOrder.LITTLE_ENDIAN)
 
     val serverInfo: ServerInfo = ProtocolAlg.iterator(is, os, in, out, ProtocolSteps.sendHello(ClientInfo(
       name,

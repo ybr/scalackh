@@ -2,12 +2,11 @@ package scalackh.protocol.steps
 
 import java.nio.ByteBuffer
 
+import scalackh.math.UInt64
 import scalackh.protocol._
 import scalackh.protocol.codec._
 
 object ProtocolSteps {
-  val MAX_ROWS_IN_BLOCK = 10000
-
   def  sendHello(info: ClientInfo): ProtocolStep = Cont.o { buf =>
     ClientPacketEncoders.message.write(info, buf)
     receiveHello
@@ -44,7 +43,7 @@ object ProtocolSteps {
     ClientPacketEncoders.message.write(ClientDataBlock(Block.empty), buf) // external tables
     val nextWithSample = {
       if(values.isEmpty) (_: Block) => receiveResult
-      else (sample: Block) => sendData(sample, values)(receiveResult)
+      else (sample: Block) => sendData(sample, values, settings)(receiveResult)
     }
     receiveSample(nextWithSample)
   })
@@ -53,8 +52,9 @@ object ProtocolSteps {
     case p: ServerDataBlock => Emit(p, Cont(nextWithSample(p.block)))
   }
 
-  def sendData(sample: Block, values: Iterator[Block])(afterSend: => ProtocolStep): ProtocolStep = handleServerException(Cont.o { buf =>
+  def sendData(sample: Block, values: Iterator[Block], settings: Map[String, Any])(afterSend: => ProtocolStep): ProtocolStep = handleServerException(Cont.o { buf =>
     if(values.hasNext) {
+      val maxInsertBlockSize = settings.get("max_insert_block_size").collect { case ui64: UInt64 => ui64.unsafeLong.toInt }.getOrElse(65535)
       val block = values.next()
       val blockWithNames = sample.copy(
         nbRows = block.nbRows,
@@ -63,7 +63,7 @@ object ProtocolSteps {
           dataCol.copy(name = sampleCol.name)
         }
       )
-      sendBlock(blockWithNames)(sendData(sample, values)(afterSend))
+      sendBlock(blockWithNames, maxInsertBlockSize)(sendData(sample, values, settings)(afterSend))
     }
     else {
       ClientPacketEncoders.message.write(ClientDataBlock(Block.empty), buf) // end of data
@@ -71,15 +71,15 @@ object ProtocolSteps {
     }
   })
 
-  def sendBlock(block: Block)(next: => ProtocolStep): ProtocolStep = handleServerException(Cont.o { buf =>
-    if(block.nbRows <= MAX_ROWS_IN_BLOCK) {
+  def sendBlock(block: Block, maxInsertBlockSize: Int)(next: => ProtocolStep): ProtocolStep = handleServerException(Cont.o { buf =>
+    if(block.nbRows <= maxInsertBlockSize) {
       ClientPacketEncoders.message.write(ClientDataBlock(block), buf)
       next
     }
     else { // block too big, split it
-      val (maxSizeBlock, remainingBlock) = Split.splitBlock(MAX_ROWS_IN_BLOCK)(block)
+      val (maxSizeBlock, remainingBlock) = Split.splitBlock(maxInsertBlockSize)(block)
       ClientPacketEncoders.message.write(ClientDataBlock(maxSizeBlock), buf)
-      sendBlock(remainingBlock)(next)
+      sendBlock(remainingBlock, maxInsertBlockSize)(next)
     }
   })
 

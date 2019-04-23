@@ -23,7 +23,7 @@ object Client {
   val version = Version(19, 1, 6)
   val name = "scalackh"
 
-  val BUFFER_SIZE: Int = 1024 * 1024 //  1 MB
+  val DefaultBufferSize: Int = 1024 * 1024 //  1 MB
 
   def apply(address: InetAddress,
             port: Int,
