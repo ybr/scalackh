@@ -8,6 +8,10 @@ scalaVersion := "2.12.8"
 
 libraryDependencies ++= Seq(
   "com.chuusai" %% "shapeless" % "2.3.3",
+  //"io.netty" % "netty-all" % "4.1.35.Final",
+  "io.monix" %% "monix" % "3.0.0-RC2",
+  "com.typesafe.netty" % "netty-reactive-streams" % "2.0.3",
+
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
   "io.monix" %% "minitest" % "2.3.2" % Test
 )
