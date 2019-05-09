@@ -99,7 +99,10 @@ object ServerPacketDecoders {
       case LOG => logBlockDecoder
       case other => throw new UnsupportedOperationException(s"Unknown server packet type ${other}")
     }
-  } yield packet
+  } yield {
+    println("DECODED " + packet)
+    packet
+  }
 
   val serverInfoDecoder: Decoder[ServerInfo] = for {
     serverName <- stringDecoder

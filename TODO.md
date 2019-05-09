@@ -34,11 +34,15 @@ Milestone
 - reactive frontend (netty + monix)
 
 # 7
+- cancel queries
+- queries with progress
+
+# 8
 - performance jmh
 - optimization
  
-# 8
-- support for column types (generalized array, tuple)
+# 9
+- support for column types (generalized array, generalized tuple, decimal)
 
 
 Reads
