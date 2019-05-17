@@ -1,5 +1,7 @@
 package scalackh.client
 
+import scalackh.client.core.Connection
+
 import scala.util.Try
 
 package object derivation {

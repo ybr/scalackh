@@ -4,7 +4,6 @@ import java.io.{InputStream, OutputStream}
 import java.net.Socket
 import java.nio.ByteBuffer
 
-import scalackh.client.Connection
 import scalackh.protocol._
 import scalackh.protocol.steps.{Emit, ProtocolSteps}
 

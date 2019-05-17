@@ -1,7 +1,7 @@
 package scalackh.client.derivation
 
+import scalackh.client.core.Connection
 import scalackh.protocol.Block
-import scalackh.client.Connection
 import scalackh.transpose.ColumnTransposer
 
 import scala.util.Try

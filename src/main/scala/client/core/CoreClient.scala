@@ -6,7 +6,6 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import scala.util.Try
 
-import scalackh.client.{Client, Connection}
 import scalackh.protocol._
 import scalackh.protocol.steps._
 

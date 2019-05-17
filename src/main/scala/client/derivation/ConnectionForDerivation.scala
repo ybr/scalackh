@@ -1,6 +1,6 @@
 package scalackh.client.derivation
 
-import scalackh.client.Connection
+import scalackh.client.core.Connection
 import scalackh.math.UInt64
 import scalackh.protocol._
 import scalackh.transpose.ColumnTransposer

@@ -1,10 +1,9 @@
-package scalackh.client
+package scalackh.client.core
 
 import java.net.InetAddress
 
 import scala.util.Try
 
-import scalackh.client.core._
 import scalackh.protocol._
 
 trait Client {

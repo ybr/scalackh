@@ -1,4 +1,4 @@
-package scalackh.client
+package scalackh.client.core
 
 import scalackh.protocol._
 
