@@ -9,8 +9,9 @@ import scalackh.protocol._
 trait Client {
   def address(): InetAddress
   def port(): Int
-  def user(): Option[String]
-  def password(): Option[String]
+  def user(): String
+  def password(): String
+  def database(): String
   def name(): String
   def version(): Version
   def settings(): Map[String, Any]
@@ -26,17 +27,18 @@ object Client {
 
   def apply(address: InetAddress,
             port: Int,
-            user: Option[String],
-            password: Option[String],
+            user: String,
+            password: String,
+            database: String,
             name: String,
             version: Version,
             settings: Map[String, Any]): Client = {
-    CoreClient(address, port, user, password, name, version, settings)
+    CoreClient(address, port, user, password, database, name, version, settings)
   }
 
-  def apply(host: String, port: Int, user: Option[String] = None, password: Option[String] = None, settings: Map[String, Any] = Map.empty): Try[Client] = Try {
+  def apply(host: String, port: Int, user: String = "default", password: String = "", database: String = "default", settings: Map[String, Any] = Map.empty): Try[Client] = Try {
     val address: InetAddress = InetAddress.getByName(host)
-    Client(address, port, user, password, name, version, settings)
+    Client(address, port, user, password, database, name, version, settings)
   }
 }
 

@@ -20,8 +20,9 @@ import scalackh.protocol.steps._
 case class ClientForMonixImpl(
   host: String,
   port: Int,
-  user: Option[String],
-  password: Option[String],
+  user: String,
+  password: String,
+  database: String,
   name: String,
   version: Version,
   settings: Map[String, Any]) extends ClientForMonix {
@@ -49,9 +50,9 @@ case class ClientForMonixImpl(
     val step = ProtocolSteps.sendHello(ClientInfo(
       name,
       version,
-      user.getOrElse("default"),
-      password.getOrElse("default"),
-      ""
+      database,
+      user,
+      password
     ))
 
     for {

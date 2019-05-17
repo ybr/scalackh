@@ -12,8 +12,9 @@ import scalackh.protocol.steps._
 case class CoreClient(
   address: InetAddress,
   port: Int,
-  user: Option[String],
-  password: Option[String],
+  user: String,
+  password: String,
+  database: String,
   name: String,
   version: Version,
   settings: Map[String, Any]) extends Client {
@@ -30,9 +31,9 @@ case class CoreClient(
     val serverInfo: ServerInfo = ProtocolAlg.iterator(is, os, in, out, ProtocolSteps.sendHello(ClientInfo(
       name,
       version,
-      user.getOrElse("default"),
-      password.getOrElse("default"),
-      ""
+      database,
+      user,
+      password,
     )), true)
     .collect { case Emit(si: ServerInfo, _) => si }
     .next

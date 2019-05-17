@@ -8,8 +8,9 @@ import scalackh.protocol._
 trait ClientForMonix {
   def host(): String
   def port(): Int
-  def user(): Option[String]
-  def password(): Option[String]
+  def user(): String
+  def password(): String
+  def database(): String
   def name(): String
   def version(): Version
   def settings(): Map[String, Any]
@@ -31,19 +32,21 @@ object ClientForMonix {
 
   def apply(host: String,
             port: Int,
-            user: Option[String],
-            password: Option[String],
+            user: String,
+            password: String,
+            database: String,
             name: String,
             version: Version,
             settings: Map[String, Any]): ClientForMonix = {
-    ClientForMonixImpl(host, port, user, password, name, version, settings)
+    ClientForMonixImpl(host, port, user, password, database, name, version, settings)
   }
 
   def apply(host: String,
             port: Int,
-            user: Option[String] = None,
-            password: Option[String] = None,
+            user: String = "default",
+            password: String = "",
+            database: String = "default",
             settings: Map[String, Any] = Map.empty): ClientForMonix = {
-    ClientForMonix(host, port, user, password, name, version, settings)
+    ClientForMonix(host, port, user, password, database, name, version, settings)
   }
 }
