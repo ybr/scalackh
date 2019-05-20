@@ -1,7 +1,6 @@
-package scalackh.client.derivation
+package scalackh.transpose
 
 import scalackh.protocol._
-import scalackh.transpose.ColumnTransposer
 
 object DerivationUtils {
   def blockIterator[A](as: Iterator[A], groupSize: Int)(implicit colA: ColumnTransposer[A]): Iterator[Block] = as.grouped(groupSize).map { group =>

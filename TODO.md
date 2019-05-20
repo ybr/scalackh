@@ -33,6 +33,7 @@ Milestone
 # 6
 - reactive frontend (netty + monix)
 - use database, problem it actually uses user getOrElse("default")
+- reactive client with derivation
 
 # 7
 - cancel queries

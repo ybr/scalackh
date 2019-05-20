@@ -1,13 +1,19 @@
-package scalackh.client.derivation
+package scalackh.client.javaio
 
-import scalackh.client.core.Connection
 import scalackh.math.UInt64
-import scalackh.protocol._
-import scalackh.transpose.ColumnTransposer
+import scalackh.protocol.Block
+import scalackh.transpose.{ColumnTransposer, DerivationUtils}
 
 import scala.util.Try
 
-case class ConnectionForDerivation(underlying: Connection) extends DerivationConnection {
+trait DerivationConnection {
+  def underlying(): Connection
+  def query[A](sql: String, externalTables: Iterator[Block] = Iterator.empty, setting: Map[String, Any] = Map.empty)(implicit colA: ColumnTransposer[A]): Iterator[Try[List[A]]]
+  def insert[A](sql: String, values: Iterator[A], setting: Map[String, Any] = Map.empty)(implicit colA: ColumnTransposer[A]): Unit
+  def disconnect(): Unit
+}
+
+case class DerivationConnectionImpl(underlying: Connection) extends DerivationConnection {
   def query[A](sql: String, externalTables: Iterator[Block], settings: Map[String, Any])(implicit colA: ColumnTransposer[A]): Iterator[Try[List[A]]] = {
     underlying.query(sql, externalTables, settings).map { block =>
       colA.fromColumnsData(block.columns.map(_.data))

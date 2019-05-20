@@ -1,4 +1,4 @@
-package scalackh.client.core
+package scalackh.client.javaio
 
 import java.io.{InputStream, OutputStream}
 import java.net.Socket

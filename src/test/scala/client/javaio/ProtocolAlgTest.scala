@@ -1,4 +1,4 @@
-package scalackh.client.core
+package scalackh.client.javaio
 
 import java.io._
 import java.nio.ByteBuffer
