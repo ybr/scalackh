@@ -23,6 +23,7 @@ object ProtocolAlgForNettyMonix {
     if(out.position > 0) {
       out.flip()
       bbOut.writeBytes(out)
+      bbOut.retain(1) // must retain netty byte buffer because it is release when written
 
       TaskFormNettyFutures.fromFuture(ch.writeAndFlush(bbOut)).map { _ =>
         out.clear()
@@ -63,7 +64,6 @@ object ProtocolAlgForNettyMonix {
   }
 
   def obs(ch: Channel, bbOut: ByteBuf, in: ByteBuffer, out: ByteBuffer, step: ProtocolStep, first: Boolean)(implicit scheduler: Scheduler): Observable[ServerPacket] = {
-    bbOut.retain(1) // must retain netty byte buffer otherwise it is released
     val publisher: HandlerPublisher[ByteBuf] = new HandlerPublisher(ch.eventLoop, classOf[ByteBuf])
     val bbs: Observable[ByteBuf] = Observable.fromReactivePublisher(publisher, 1)
     ch.pipeline().replace(ListenerName, ListenerName, publisher)

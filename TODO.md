@@ -34,6 +34,8 @@ Milestone
 - reactive frontend (netty + monix)
 - use database, problem it actually uses user getOrElse("default")
 - reactive client with derivation
+- fix netty ByteBuf refCnt = 0
+- fix race problem netty and decoders touching the same buffer, this should allow to use an arbitrary monix scheduler (forced to use a single thread scheduler right now)
 
 # 7
 - cancel queries
