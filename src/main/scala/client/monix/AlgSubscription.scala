@@ -5,7 +5,6 @@ import io.netty.channel.Channel
 
 import java.nio.ByteBuffer
 
-import monix.eval.Task
 import monix.execution.Scheduler
 import monix.reactive.Observable
 
@@ -23,13 +22,8 @@ class AlgSubscription(subscriber: Subscriber[_ >: ServerPacket], bbs: Observable
   def request(n: Long): Unit = applyStep()
 
   bbs.foreach { bb =>
-    Task {
-      currentStep = ProtocolAlgForNettyMonix.needsInputStep(bb, in, out, currentStep, first)
-      applyStep()
-    }
-    .executeOn(scheduler)
-    .runToFuture(scheduler)
-    ()
+    currentStep = ProtocolAlgForNettyMonix.needsInputStep(bb, in, out, currentStep, first)
+    applyStep()
   }
 
   def applyStep(): Unit = {
